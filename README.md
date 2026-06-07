@@ -1,14 +1,31 @@
 
 
-# Instructions:
+# Instruction
 
-Download the correct type of  ``mlx_CLXV-2.2-py3-none-any.whl`` for your system
+The .whl package has worng metadata and many not work, the alternative is to build from source:
 
-then:
+activate your virtual environment
 ```bash
-unzip mlx_CLXV-2.2-py3-none-any.whl
+source venv_mlx/bin/activate
 ```
-then:
-```python
-from mlx import Mlx
+
+
+extract the source archive
+
+```bash
+tar -xzf mlx_CLXV-2.2.tgz
+cd mlx_CLXV
+```
+
+build the project wheel from source
+```bash
+make
+```
+```bash
+uv pip install mlx-2.2-py3-none-any.whl
+```
+
+test the install
+```bash
+python -c "from mlx.mlx import Mlx; print(Mlx)"
 ```
