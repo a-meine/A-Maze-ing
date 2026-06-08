@@ -2,7 +2,7 @@
 
 # Instruction
 
-The .whl package has worng metadata and many not work, the alternative is to build from source:
+The .whl package has worng metadata and may not work, the alternative is to build from source:
 
 activate your virtual environment
 ```bash
@@ -27,5 +27,5 @@ uv pip install mlx-2.2-py3-none-any.whl
 
 test the install
 ```bash
-python -c "from mlx.mlx import Mlx; print(Mlx)"
+python3 -c "from mlx.mlx import Mlx; print(Mlx)"
 ```
