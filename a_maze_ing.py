@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-from maze.config_parser2 import load_config
+from maze.config_parser import load_config
+from visualiser.mlx_visualiser import Window
 
 
 if __name__ == "__main__":
@@ -12,9 +13,10 @@ if __name__ == "__main__":
 
     config_file: str = sys.argv[1]
     try:
-        Maze_config = load_config(config_file)
+        config = load_config(config_file)
         print("parsed config parameters: ")
-        print(Maze_config)
+        # print(maze_config)
     except (KeyError, ValueError, TypeError) as e:
         print(e)
-
+        exit(1)
+    Window().run()

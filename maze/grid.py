@@ -13,6 +13,9 @@ class Walls:
     north: bool = True
     south: bool = True
 
+    def __repr__(self) -> str:
+        return "1111"
+
 
 class Cell:
     """
@@ -24,14 +27,14 @@ class Cell:
         """
         self.coordinate: tuple[int, int] = coordinate
         # Occupied: bool
-        # self.Walls: Walls
+        self.walls = Walls()
 
     def __repr__(self) -> str:
         """
         This funtion show the created cells in a readable format
         instaed of <__main__.Cell object at 0x7c013c7627a0>
         """
-        return str(self.coordinate)
+        return str(self.coordinate) + str(self.walls)
 
 
 # def initialize_maze(self) -> list[list[Cell]]:
@@ -53,6 +56,3 @@ class Grid:
                 row.append(new_cell)
             grid.append(row)
         self.cells = grid
-
-
-print(Grid(6, 7).cells)

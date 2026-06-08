@@ -19,7 +19,7 @@ class Config(BaseModel):
         """
     model_config = ConfigDict(frozen=True, extra='forbid')
 
-    width: int  # number of pixels, no need for float
+    width: int = Field(le=100)  # number of pixels, no need for float
     height: int  # same as above
     entry: tuple[int, int]  # cells are dicrete, no need for float
     exit_: tuple[int, int] = Field(alias='exit')  # same as above
