@@ -16,7 +16,7 @@ class Config(BaseModel):
         - forzen for immutablilty
         - ....
         - Field has not been used because it does not provide custom error
-        """
+    """
     model_config = ConfigDict(frozen=True, extra='forbid')
 
     width: int  # number of pixels, no need for float

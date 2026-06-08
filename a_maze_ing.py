@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-from maze.config_parser2 import load_config
+from maze.config_parser import load_config
 
 
 if __name__ == "__main__":
