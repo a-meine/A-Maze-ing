@@ -4,48 +4,59 @@ from maze.cell import Cell
 from maze.grid import Grid
 
 
-def generate_maze(width: int, height: int):
-    grid = Grid(width, height)
-    return grid
+class DFS:
+    @property
+    def width(self):
+        return self._grid.width
 
+    @property
+    def height(self):
+        return self._grid.height
 
-def get_next_move(cell: Cell) -> Cell | None:
-    available_walls = grid.available_cell(cell.coordinate)
-    if not available_walls:
-        return None
-    next_wall = random.choice(available_walls)
-    grid.open_wall(cell.coordinate, next_wall)
-    next_cell = grid.get_neighbor(cell, next_wall)
-    return next_cell
+    def __getitem__(self, pos: int) -> list[Cell]:
+        return self._grid[pos]
 
+    def __setitem__(self, pos: int, value: list[Cell]):
+        self._grid[pos] = value
 
-def is_full(grid: Grid):
-    for y in range(grid.height):
-        for x in range(grid.width):
-            if not grid[y][x].occupied:
-                return False
-    return True
+    _grid: Grid
 
+    def __init__(self, width: int, height: int):
+        self._grid = Grid(width, height)
 
-if __name__ == "__main__":
-    width = 10
-    height = 10
-    grid = Grid(width, height)
-    history: list[Cell] = []
-    x = random.randint(0, width - 1)
-    y = random.randint(0, height - 1)
-    start: Cell = grid[y][x]
-    start.occupied = True
-    history.append(start)
-    while True:
+    def get_next_move(self, cell: Cell) -> Cell | None:
+        available_walls = self._grid.available_cell(cell.coordinate)
+        if not available_walls:
+            return None
+        next_wall = random.choice(available_walls)
+        self._grid.open_wall(cell.coordinate, next_wall)
+        next_cell = self._grid.get_neighbor(cell, next_wall)
+        return next_cell
+
+    def is_full(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                if not self._grid[y][x].occupied:
+                    return False
+        return True
+
+    def generate_maze(self):
+        history: list[Cell] = []
+        x = random.randint(0, self.width - 1)
+        y = random.randint(0, self.height - 1)
+        start: Cell = self._grid[y][x]
+        start.occupied = True
+        history.append(start)
         while True:
-            cell = get_next_move(start)
-            if cell is None:
+            while True:
+                cell = self.get_next_move(start)
+                if cell is None:
+                    break
+                cell.occupied = True
+                start = cell
+                history.append(start)
+                yield cell
+            if self.is_full():
                 break
-            cell.occupied = True
-            start = cell
-            history.append(start)
-        if is_full(grid):
-            break
-        start = history.pop()
-    grid.show()
+            start = history.pop()
+        # grid.show()
