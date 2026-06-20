@@ -11,18 +11,18 @@ class Algorithm(ABC):
         self._grid = Grid(width, height)
 
     def __getitem__(self, pos: int) -> list[Cell]:
-        return self._grid[pos]
+        return self.grid[pos]
 
     def __setitem__(self, pos: int, value: list[Cell]) -> None:
-        self._grid[pos] = value
+        self.grid[pos] = value
 
     @property
     def width(self) -> int:
-        return self._grid.width
+        return self.grid.width
 
     @property
     def height(self) -> int:
-        return self._grid.height
+        return self.grid.height
 
     @property
     def grid(self) -> Grid:

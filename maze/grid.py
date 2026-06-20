@@ -65,7 +65,7 @@ class Grid:
         else:
             return None
 
-    def available_cell(self, source: Coordinate):
+    def available_direction(self, source: Coordinate):
         usable: list[Direction] = []
         cell = self._grid[source.y][source.x]
         for direction in Direction:

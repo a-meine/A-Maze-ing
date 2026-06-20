@@ -33,7 +33,7 @@ class DFS(Algorithm):
                 continue
             next_cell.occupied = True
             occupied_cells += 1
-            if self._grid.available_cell(cursor.coordinate):
+            if self.grid.available_cell(cursor.coordinate):
                 history.append(cursor)
             cursor = next_cell
             if fn is not None:

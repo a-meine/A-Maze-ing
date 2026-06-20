@@ -3,6 +3,9 @@ name = "a-maze-ing"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "mlx>=0.31.2",
+    "mlx",
     "pydantic>=2.13.4",
 ]
+
+[tool.uv.sources]
+mlx = { path = "mlx-2.2-py3-none-any.whl" }

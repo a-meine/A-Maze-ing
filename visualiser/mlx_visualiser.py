@@ -5,12 +5,12 @@ from ctypes import c_uint
 from typing import Any
 import time
 
+
 def rgb(r: int, g: int, b: int) -> int:
     return (r << 16) | (g << 8) | b
 
 
 CYAN = rgb(214, 233, 160)
-# CYAN = rgb(0, 255, 255)
 TILE_SIZE = 10
 
 
@@ -45,9 +45,7 @@ class Window:
         self.m.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr, img, 0, 0)
 
     def maze_image(self):
-        # from maze.grid import Grid
         from maze.algorithms.dfs import DFS
-        # from maze.cell import Cell
 
         width = 10
         height = 10
@@ -55,10 +53,7 @@ class Window:
 
         rend_tiles_x = 2 * mt_grid.width + 1
         rend_tiles_y = 2 * mt_grid.height + 1
-        # rend_tiles_x = mt_grid.width
-        # rend_tiles_y = mt_grid.height
-        # self.tile_width = self.win_width // rend_tiles_x
-        # self.tile_height = self.win_height // rend_tiles_y
+        
         maze_x = self.win_width // 10
         maze_y = self.win_height // 10
         maze_w = self.win_width - 2 * maze_x
@@ -77,36 +72,15 @@ class Window:
         self.draw_v_wall()
         self.draw_a_cell()
         self.draw_border(rend_tiles_x, rend_tiles_y)
+
         # draw background
         self.draw_backgroud()
         self.draw_maze_backgroud(maze_x, maze_y, maze_w, maze_h)
         self.m.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr,
                                        self.background_img, 0, 0)
-        # self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_FLUSH, self.win_ptr)
-
-        # draw border
-        # self.m.mlx_put_image_to_window(
-        # self.mlx_ptr, self.win_ptr, self.border_cell, 0, 0)
         self.m.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr,
                                        self.maze_background_img, 0, 0)
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
-
-        # for y in range(rend_tiles_y):
-        #     for x in range(rend_tiles_x):
-        #         px = offset_x + x * self.tile_width
-        #         py = offset_y + y * self.tile_height
-
-        #         if x % 2 == 1 and y % 2 == 1:
-        #             img = self.cell_img_ptr
-        #         elif x % 2 == 0 and y % 2 == 1:
-        #             img = self.v_wall_img_ptr
-        #         else:
-        #             img = self.h_wall_img_ptr
-
-        #         self.m.mlx_put_image_to_window(
-        #             self.mlx_ptr, self.win_ptr, img, px, py
-        #         )
-        #     self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
 
         for cell in mt_grid.generate_maze():
             rx = 2 * cell.coordinate.x + 1
@@ -134,39 +108,6 @@ class Window:
                             self.win_ptr)
             time.sleep(1/15)
         mt_grid._grid.show()
-        # /*Monir change*/
-        # for y in range(mt_grid.height):
-        #     for x in range(mt_grid.width):
-        #         cell = mt_grid[y][x]
-
-        #         rx = 2 * x + 1
-        #         ry = 2 * y + 1
-
-        #         px = offset_x + rx * self.tile_width
-        #         py = offset_y + ry * self.tile_height
-
-        #         # draw cell interior
-        #         self.m.mlx_put_image_to_window(
-        #             self.mlx_ptr, self.win_ptr, self.cell_img_ptr, px, py
-        #         )
-
-        #         # east wall
-        #         if cell.walls.east:
-        #             self.m.mlx_put_image_to_window(
-        #                 self.mlx_ptr, self.win_ptr, self.v_wall_img_ptr,
-        #                 offset_x + (rx + 1) * self.tile_width,
-        #                 offset_y + ry * self.tile_height
-        #             )
-
-        #         # south wall
-        #         if cell.walls.south:
-        #             self.m.mlx_put_image_to_window(
-        #                 self.mlx_ptr, self.win_ptr, self.h_wall_img_ptr,
-        #                 offset_x + rx * self.tile_width,
-        #                 offset_y + (ry + 1) * self.tile_height
-        #             )
-                # self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
-
 
     def draw_backgroud(self):
         self.background_img = self.m.mlx_new_image(self.mlx_ptr,
@@ -183,15 +124,11 @@ class Window:
                 data[index + 2] = 27
                 data[index + 3] = 255
 
-        # for cell in dfs():
-        #     update_image()
-
     def draw_maze_backgroud(self, maze_x, maze_y, maze_w, maze_h):
         self.maze_background_img = self.m.mlx_new_image(
             self.mlx_ptr, self.win_width, self.win_height)
         data, bpp, size_line, endian = self.m.mlx_get_data_addr(
             self.maze_background_img)
-
         for y in range(maze_y, maze_y + maze_h):
             for x in range(maze_x, maze_x + maze_w):
                 index = y * size_line + x * (bpp // 8)
@@ -258,8 +195,10 @@ class Window:
                                                  self.tile_height)
         data, bpp, size_line, endian = self.m.mlx_get_data_addr(
                                                 self.cell_img_ptr)
-        margin_y = self.tile_height // 1000  # this is to control the margin, now it is 0
-        margin_x = self.tile_width // 1000  # same s above
+        # this is to control the margin, now it is 0
+        margin_y = self.tile_height // 1000
+        # same s above
+        margin_x = self.tile_width // 1000
         for y in range(margin_y, self.tile_height - margin_y):
             for x in range(margin_x, self.tile_width - margin_x):
                 index = y * size_line + x * (bpp // 8)

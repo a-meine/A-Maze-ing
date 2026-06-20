@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-from maze.config_parser import load_config
+from config.config_parser import load_config
 from visualiser.mlx_visualiser import Window
 
 
