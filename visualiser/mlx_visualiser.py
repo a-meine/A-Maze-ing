@@ -1,6 +1,5 @@
-
-# from mlx import Mlx
 from mlx import Mlx
+from maze.cell import Cell
 from ctypes import c_uint
 from typing import Any
 import time
@@ -44,6 +43,31 @@ class Window:
             return
         self.m.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr, img, 0, 0)
 
+    def render_cell(self, offset_x: int, offset_y: int, cell: Cell):
+        rx = 2 * cell.coordinate.x + 1
+        ry = 2 * cell.coordinate.y + 1
+        px = offset_x + rx * self.tile_width
+        py = offset_y + ry * self.tile_height
+        self.m.mlx_put_image_to_window(
+            self.mlx_ptr, self.win_ptr, self.cell_img_ptr, px, py
+        )
+        if cell.walls.east:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.v_wall_img_ptr,
+                offset_x + (rx + 1) * self.tile_width,
+                offset_y + ry * self.tile_height
+            )
+        # south wall
+        if cell.walls.south:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.h_wall_img_ptr,
+                offset_x + rx * self.tile_width,
+                offset_y + (ry + 1) * self.tile_height
+            )
+            self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
+                            self.win_ptr)
+            time.sleep(1/15)
+
     def maze_image(self):
         from maze.algorithms.dfs import DFS
 
@@ -82,31 +106,8 @@ class Window:
                                        self.maze_background_img, 0, 0)
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
 
-        for cell in mt_grid.generate_maze():
-            rx = 2 * cell.coordinate.x + 1
-            ry = 2 * cell.coordinate.y + 1
-            px = offset_x + rx * self.tile_width
-            py = offset_y + ry * self.tile_height
-            self.m.mlx_put_image_to_window(
-                self.mlx_ptr, self.win_ptr, self.cell_img_ptr, px, py
-            )
-            if cell.walls.east:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.v_wall_img_ptr,
-                    offset_x + (rx + 1) * self.tile_width,
-                    offset_y + ry * self.tile_height
-                )
-
-            # south wall
-            if cell.walls.south:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.h_wall_img_ptr,
-                    offset_x + rx * self.tile_width,
-                    offset_y + (ry + 1) * self.tile_height
-                )
-            self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
-                            self.win_ptr)
-            time.sleep(1/15)
+        mt_grid.generate_maze(
+            lambda cell: self.render_cell(offset_x, offset_y, cell))
         mt_grid._grid.show()
 
     def draw_backgroud(self):

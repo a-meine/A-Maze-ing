@@ -3,9 +3,6 @@ from maze.coordinate import Coordinate
 
 
 class Cell:
-    occupied: bool
-    coordinate: Coordinate
-    walls: Walls
 
     def __init__(self, coordinate: Coordinate):
         self.coordinate = coordinate

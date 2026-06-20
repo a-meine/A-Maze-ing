@@ -4,25 +4,20 @@ from maze.direction import Direction
 
 
 class Grid:
-    width: int
-    height: int
-    _grid: list[list[Cell]] = []
+
+    def __init__(self, width: int, height: int, ):
+        self.width = width
+        self.height = height
+        self._grid: list[list[Cell]] = [
+            [Cell(Coordinate(x, y)) for x in range(width)]
+            for y in range(height)
+        ]
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self._grid[pos]
 
     def __setitem__(self, pos: int, value: list[Cell]):
         self._grid[pos] = value
-
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        for y in range(height):
-            new_cells = []
-            for x in range(width):
-                new_cell = Cell(Coordinate(x, y))
-                new_cells.append(new_cell)
-            self._grid.append(new_cells)
 
     def __set_wall(
             self,

@@ -31,6 +31,8 @@ mlx: dependecy
 	sed -i 's|^all: config $$(NAME) pypkg|all: $$(NAME) pypkg|' "$$FILE"; \
 	sed -i '/^config: configure.sh/,+1 s/^/# /' "$$FILE"; \
 	sed -i '1 s|^#!/bin/sh|#!/usr/bin/env bash|' pybuild.sh
+	sed -E -i 's/^( *mlx *= *\[[^]]*)(])/ \1, "py.typed"\2/' mlx_CLXV/python/pyproject.toml
+	touch mlx_CLXV/python/src/mlx/py.typed
 	cd mlx_CLXV && make
 	rm -rf mlx_CLXV
 

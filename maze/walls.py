@@ -1,5 +1,6 @@
 class Walls:
-    north: bool = True
-    east: bool = True
-    west: bool = True
-    south: bool = True
+    def __init__(self) -> None:
+        self.north = True
+        self.east = True
+        self.west = True
+        self.south = True

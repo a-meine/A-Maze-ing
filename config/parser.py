@@ -7,9 +7,10 @@ exentsive validation and less verbosity (aka to be more Pythonic)
 """
 from pydantic import BaseModel, model_validator, ConfigDict, Field
 from typing import Any
+from config.base import ConfigBase
 
 
-class Config(BaseModel):
+class Config(ConfigBase, BaseModel):
     """
     this class saves the parsed confgurate, usnig:
         - Pydantic for post validation (model_validator)
@@ -22,7 +23,7 @@ class Config(BaseModel):
     width: int = Field(le=100)  # number of pixels, no need for float
     height: int  # same as above
     entry: tuple[int, int]  # cells are dicrete, no need for float
-    exit_: tuple[int, int] = Field(alias='exit')  # same as above
+    exit: tuple[int, int] = Field(alias='exit')  # same as above
     output_file: str
     perfect: bool
 
@@ -37,7 +38,7 @@ class Config(BaseModel):
             raise ValueError("HEIGHT must be positive")
         if self.entry[0] < 0 or self.entry[1] < 0:
             raise ValueError("ENTRY point coordinates must pe positive")
-        if self.exit_[0] < 0 or self.exit_[1] < 0:
+        if self.exit[0] < 0 or self.exit[1] < 0:
             raise ValueError("EXIT point coordinates must pe positive")
 
     @model_validator(mode='after')
@@ -46,13 +47,13 @@ class Config(BaseModel):
         This method performs cross-field validaiton, it runs automatically
         after model_post_init and verfies that full model is coherent.
         """
-        if self.entry[0] >= self.width or self.exit_[0] >= self.width:
+        if self.entry[0] >= self.width or self.exit[0] >= self.width:
             raise ValueError("entry and exit point coordinates must in " +
                              "widthxheight range")
-        if self.entry[1] >= self.height or self.exit_[1] >= self.height:
+        if self.entry[1] >= self.height or self.exit[1] >= self.height:
             raise ValueError("entry and exit point coordinates must in " +
                              "widthxheight range")
-        if self.entry == self.exit_:
+        if self.entry == self.exit:
             raise ValueError("ENTRY and EXIT point cannot be the same")
         return self
 
