@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Callable
 from maze.cell import Cell
 from maze.grid import Grid
-from maze.coordinate import Coordinate
 
 
 class MazeAlgorithm(ABC):
@@ -12,9 +11,11 @@ class MazeAlgorithm(ABC):
     def __init__(self, config: ConfigBase) -> None:
         self._grid = Grid(config.width, config.height)
         (x, y) = config.entry
-        self._entry = Coordinate(x, y)
-        (x, y) = config.entry
-        self._exit = Coordinate(x, y)
+        self._start_cell = self.grid[y][x]
+        self._start_cell.occupied = True
+        (x, y) = config.exit
+        self._end_cell = self.grid[y][x]
+        self._total_cells = self.width * self.height
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self.grid[pos]
@@ -52,3 +53,9 @@ class MazeAlgorithm(ABC):
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
         return self[y][x]
+
+    def _clean(self) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                self[y][x].occupied = False
+        self._start_cell.occupied = True

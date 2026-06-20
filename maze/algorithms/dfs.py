@@ -5,26 +5,30 @@ from maze.cell import Cell
 
 
 class DFS(MazeAlgorithm):
+    def __init__(self, config: ConfigBase) -> None:
+        super().__init__(config)
+        self.__occupied_cells = 1
+
+    def __process_cell(self, cell: Cell):
+        cell.occupied = True
+        self.__occupied_cells += 1
 
     def generate_maze(self,
                       fn: Callable[[Cell], None] | None = None) -> None:
-        cursor = self.grid[self._entry.y][self._entry.x]
-        cursor.occupied = True
-        occupied_cells = 1
-        total_cells = self.width * self.height
-        history = [cursor]
-        while occupied_cells < total_cells:
-            next_cell = self._get_next_move(cursor)
+        cell = self._start_cell
+        history = [cell]
+        while self.__occupied_cells < self._total_cells:
+            next_cell = self._get_next_move(cell)
             if next_cell is None:
-                cursor = history.pop()
+                cell = history.pop()
                 continue
-            next_cell.occupied = True
-            occupied_cells += 1
-            if self.grid.available_direction(cursor.coordinate):
-                history.append(cursor)
-            cursor = next_cell
+            self.__process_cell(cell)
+            if self.grid.available_direction(cell.coordinate):
+                history.append(cell)
             if fn is not None:
-                fn(cursor)
+                fn(next_cell)
+            cell = next_cell
+        self._clean()
 
 
 if __name__ == "__main__":
