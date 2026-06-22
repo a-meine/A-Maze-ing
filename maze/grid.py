@@ -48,15 +48,41 @@ class Grid:
     def close_wall(self, coordinate: Coordinate, wall: Direction) -> None:
         self.__set_wall(coordinate, wall, True)
 
-    def get_neighbor(self, cell: Cell, wall: Direction) -> Cell | None:
-        if wall == Direction.NORTH and cell.coordinate.y != 0:
+    def get_neighbor(self, cell: Cell, direction: Direction) -> Cell | None:
+        if direction == Direction.NORTH and cell.coordinate.y != 0:
             return self._grid[cell.coordinate.y - 1][cell.coordinate.x]
-        elif wall == Direction.EAST and cell.coordinate.x != self.width - 1:
+        elif (direction == Direction.EAST and
+              cell.coordinate.x != self.width - 1):
             return self._grid[cell.coordinate.y][cell.coordinate.x + 1]
-        elif wall == Direction.SOUTH and cell.coordinate.y != self.height - 1:
+        elif (direction == Direction.SOUTH and
+                cell.coordinate.y != self.height - 1):
             return self._grid[cell.coordinate.y + 1][cell.coordinate.x]
-        elif wall == Direction.WEST and cell.coordinate.x != 0:
+        elif direction == Direction.WEST and cell.coordinate.x != 0:
             return self._grid[cell.coordinate.y][cell.coordinate.x - 1]
+        else:
+            return None
+
+    def get_direction(self, cell_1: Cell, cell_2: Cell) -> Direction | None:
+        if (
+            cell_1.coordinate.y - 1 == cell_2.coordinate.y and
+            cell_1.coordinate.x == cell_2.coordinate.x
+        ):
+            return Direction.NORTH
+        elif (
+            cell_1.coordinate.x + 1 == cell_2.coordinate.x and
+            cell_1.coordinate.y == cell_2.coordinate.y
+        ):
+            return Direction.EAST
+        elif (
+            cell_1.coordinate.y + 1 == cell_2.coordinate.y and
+            cell_1.coordinate.x == cell_2.coordinate.x
+        ):
+            return Direction.SOUTH
+        elif (
+            cell_1.coordinate.x - 1 == cell_2.coordinate.x and
+            cell_1.coordinate.y == cell_2.coordinate.y
+        ):
+            return Direction.WEST
         else:
             return None
 

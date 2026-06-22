@@ -12,22 +12,22 @@ class DFS(MazeAlgorithm):
     def __process_cell(self, cell: Cell):
         cell.occupied = True
         self.__occupied_cells += 1
+        self._trigger_event(cell)
 
     def generate_maze(self,
                       fn: Callable[[Cell], None] | None = None) -> None:
         cell = self._start_cell
         history = [cell]
         while self.__occupied_cells < self._total_cells:
-            new_cell = self._get_next_move(cell)
-            if new_cell is None:
+            direction = self._get_random_direction(cell)
+            if direction is None:
                 cell = history.pop()
                 continue
-            cell = new_cell
+            self.grid.open_wall(cell.coordinate, direction)
+            cell = self.get_neighbor(cell, direction)
             self.__process_cell(cell)
             if self.grid.available_direction(cell.coordinate):
                 history.append(cell)
-            if fn is not None:
-                fn(cell)
         self._clean()
 
 

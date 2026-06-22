@@ -4,15 +4,16 @@ from abc import ABC, abstractmethod
 from typing import Callable
 from maze.cell import Cell
 from maze.grid import Grid
+from maze.direction import Direction
 
 
 class MazeAlgorithm(ABC):
+    event: Callable[[Cell], None] | None = None
 
     def __init__(self, config: ConfigBase) -> None:
         self._grid = Grid(config.width, config.height)
         (x, y) = config.entry
         self._start_cell = self.grid[y][x]
-        self._start_cell.occupied = True
         (x, y) = config.exit
         self._end_cell = self.grid[y][x]
         self._total_cells = self.width * self.height
@@ -36,28 +37,40 @@ class MazeAlgorithm(ABC):
         return self._grid
 
     @abstractmethod
-    def generate_maze(self,
-                      fn: Callable[[Cell], None] | None = None) -> None:
+    def generate_maze(self) -> None:
         pass
 
-    def _get_next_move(self, cell: Cell, include_occupied: bool = False
-                       ) -> Cell | None:
-        available_walls = self.grid.available_direction(
-            cell.coordinate, include_occupied)
-        if not available_walls:
-            return None
-        next_wall = random.choice(available_walls)
-        self.grid.open_wall(cell.coordinate, next_wall)
-        next_cell = self.grid.get_neighbor(cell, next_wall)
+    def get_neighbor(self, cell: Cell, direction: Direction) -> Cell:
+        next_cell = self.grid.get_neighbor(cell, direction)
+        assert next_cell is not None
         return next_cell
 
-    def _get_random_cell(self) -> Cell:
+    def _get_random_direction(
+                self, cell: Cell, include_occupied: bool = False
+            ) -> Direction | None:
+        available_walls = self.grid.available_direction(
+            cell.coordinate, include_occupied
+        )
+        if not available_walls:
+            return None
+        return random.choice(available_walls)
+
+    def _get_random_cell(
+                self, include_occupied: bool = False
+            ) -> Cell:
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
-        return self[y][x]
+        cell = self[y][x]
+        if include_occupied or not cell.occupied:
+            return cell
+        return self._get_random_cell(include_occupied)
 
     def _clean(self) -> None:
         for y in range(self.height):
             for x in range(self.width):
                 self[y][x].occupied = False
         self._start_cell.occupied = True
+
+    def _trigger_event(self, cell: Cell):
+        if self.event is not None:
+            self.event(cell)
