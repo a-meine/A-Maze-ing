@@ -60,12 +60,16 @@ class Grid:
         else:
             return None
 
-    def available_direction(self, source: Coordinate):
+    def available_direction(
+            self, source: Coordinate, include_occupied: bool = False):
         usable: list[Direction] = []
         cell = self._grid[source.y][source.x]
         for direction in Direction:
             neighbor = self.get_neighbor(cell, direction)
-            if neighbor is not None and not neighbor.occupied:
+            if (
+                neighbor is not None and
+                (include_occupied or not neighbor.occupied)
+            ):
                 usable.append(direction)
         return usable
 

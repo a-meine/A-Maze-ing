@@ -18,16 +18,16 @@ class DFS(MazeAlgorithm):
         cell = self._start_cell
         history = [cell]
         while self.__occupied_cells < self._total_cells:
-            next_cell = self._get_next_move(cell)
-            if next_cell is None:
+            new_cell = self._get_next_move(cell)
+            if new_cell is None:
                 cell = history.pop()
                 continue
+            cell = new_cell
             self.__process_cell(cell)
             if self.grid.available_direction(cell.coordinate):
                 history.append(cell)
             if fn is not None:
-                fn(next_cell)
-            cell = next_cell
+                fn(cell)
         self._clean()
 
 
@@ -35,6 +35,8 @@ if __name__ == "__main__":
     config = ConfigBase()
     config.width = 5
     config.height = 5
+    config.entry = (0, 0)
+    config.exit = (config.width - 1, config.height - 1)
     dfs = DFS(config)
     dfs.generate_maze()
     dfs.grid.show()

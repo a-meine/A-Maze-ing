@@ -40,8 +40,10 @@ class MazeAlgorithm(ABC):
                       fn: Callable[[Cell], None] | None = None) -> None:
         pass
 
-    def _get_next_move(self, cell: Cell) -> Cell | None:
-        available_walls = self.grid.available_direction(cell.coordinate)
+    def _get_next_move(self, cell: Cell, include_occupied: bool = False
+                       ) -> Cell | None:
+        available_walls = self.grid.available_direction(
+            cell.coordinate, include_occupied)
         if not available_walls:
             return None
         next_wall = random.choice(available_walls)
