@@ -1,4 +1,3 @@
-from typing import Callable
 from maze.algorithms.maze_algorithm import MazeAlgorithm
 from maze.cell import Cell
 from config.base import ConfigBase
@@ -11,10 +10,10 @@ class Wilson(MazeAlgorithm):
 
     def __process_cell(self, cell: Cell):
         cell.occupied = True
+        self._trigger_event(cell)
         self.__occupied_cells += 1
 
-    def generate_maze(self,
-                      fn: Callable[[Cell], None] | None = None) -> None:
+    def generate_maze(self) -> None:
         is_first_run = True
         while self.__occupied_cells <= self._total_cells:
             prev: None | Cell = None
