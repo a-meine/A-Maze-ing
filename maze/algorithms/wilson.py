@@ -15,43 +15,41 @@ class Wilson(MazeAlgorithm):
 
     def generate_maze(self,
                       fn: Callable[[Cell], None] | None = None) -> None:
-        # Part 1
+        prev: None | Cell = None
+        for cell in self.find_path(is_first_run=True):
+            if prev is not None:
+                direction = self.get_direction(prev, cell)
+                self.grid.open_wall(cell.coordinate, direction)
+            self.__process_cell(cell)
+            prev = cell
+        while self.__occupied_cells < self._total_cells:
+            for cell in self.find_path():
+                if prev is not None:
+                    direction = self.get_direction(prev, cell)
+                    self.grid.open_wall(cell.coordinate, direction)
+                self.__process_cell(cell)
+                prev = cell
+
+    def find_path(self, is_first_run: bool = False):
         start = self._get_random_cell()
         start.occupied = True
         destination = self._get_random_cell()
+        start.occupied = False
         path = [start]
         cell = start
-        while cell != destination:
-            direction = self._get_random_direction(cell)
-            if direction is None:
-                cell = path.pop()
-                while cell == start:
-                    cell.occupied = False
-                    self.__occupied_cells -= 1
-                    self._trigger_event(cell)
-                    cell = path.pop()
-                continue
-            cell = self.get_neighbor(cell, direction)
-            self.__process_cell(cell)
-            path.append(cell)
-        while self.__occupied_cells < self._total_cells:
-            for cell in self.find_path():
-                self.__process_cell(cell)
-
-    # Part 2
-    def find_path(self):
-        start = self._get_random_cell()
-        path = [start]
-        cell = start
-        while cell.occupied:
+        while (not is_first_run and cell.occupied) or destination == cell:
             direction = self._get_random_direction(cell, True)
             if direction is None:
                 path = [start]
                 cell = start
                 continue
             cell = self.get_neighbor(cell, direction)
-            if cell.occupied:
+            if (not is_first_run and cell.occupied) or destination == cell:
                 break
+            if cell in path:
+                while cell != path.pop():
+                    continue
+                continue
             path.append(cell)
         return path
 

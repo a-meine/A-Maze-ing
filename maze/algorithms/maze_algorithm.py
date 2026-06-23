@@ -45,6 +45,11 @@ class MazeAlgorithm(ABC):
         assert next_cell is not None
         return next_cell
 
+    def get_direction(self, cell_1: Cell, cell_2: Cell) -> Direction:
+        direction = self.grid.get_direction(cell_1, cell_2)
+        assert direction is not None
+        return direction
+
     def _get_random_direction(
                 self, cell: Cell, include_occupied: bool = False
             ) -> Direction | None:
