@@ -1,12 +1,11 @@
-from typing import Callable
-from maze.algorithms.maze_algorithm import MazeAlgorithm
-from config.base import ConfigBase
+from maze.algorithms.generator.base import GeneratorBase
 from maze.cell import Cell
+from maze.grid import Grid
 
 
-class DFS(MazeAlgorithm):
-    def __init__(self, config: ConfigBase) -> None:
-        super().__init__(config)
+class DFS(GeneratorBase):
+    def __init__(self, grid: Grid) -> None:
+        super().__init__(grid)
         self.__occupied_cells = 1
 
     def __process_cell(self, cell: Cell):
@@ -14,11 +13,10 @@ class DFS(MazeAlgorithm):
         self.__occupied_cells += 1
         self._trigger_event(cell)
 
-    def generate_maze(self,
-                      fn: Callable[[Cell], None] | None = None) -> None:
-        cell = self._start_cell
+    def generate_maze(self) -> None:
+        cell = self.grid.start
         history = [cell]
-        while self.__occupied_cells < self._total_cells:
+        while self.__occupied_cells < self.grid.total_cells:
             direction = self._get_random_direction(cell)
             if direction is None:
                 cell = history.pop()
@@ -28,15 +26,10 @@ class DFS(MazeAlgorithm):
             self.__process_cell(cell)
             if self.grid.available_direction(cell.coordinate):
                 history.append(cell)
-        self._clean()
+        self.grid.clean()
 
 
 if __name__ == "__main__":
-    config = ConfigBase()
-    config.width = 9
-    config.height = 7
-    config.entry = (0, 0)
-    config.exit = (config.width - 1, config.height - 1)
-    dfs = DFS(config)
+    dfs = DFS(Grid.Build(11, 11))
     dfs.generate_maze()
     dfs.grid.show()

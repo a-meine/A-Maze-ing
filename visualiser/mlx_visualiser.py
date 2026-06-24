@@ -69,7 +69,7 @@ class Window:
             time.sleep(1/15)
 
     def maze_image(self):
-        from maze.algorithms.dfs import DFS
+        from maze.algorithms.generation.dfs import DFS
 
         width = 10
         height = 10

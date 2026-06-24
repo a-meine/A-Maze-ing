@@ -1,3 +1,4 @@
+from config.base import ConfigBase
 from maze.cell import Cell
 from maze.coordinate import Coordinate
 from maze.direction import Direction
@@ -5,14 +6,24 @@ from maze.direction import Direction
 
 class Grid:
 
-    def __init__(self, width: int, height: int):
-        self.width = width
-        self.height = height
+    def __init__(self, config: ConfigBase):
+        self.width = config.width
+        self.height = config.height
         self._grid: list[list[Cell]] = [
-            [Cell(Coordinate(x, y)) for x in range(width)]
-            for y in range(height)
+            [Cell(Coordinate(x, y)) for x in range(self.width)]
+            for y in range(self.height)
         ]
         self.__wall_42()
+        (x, y) = config.entry
+        self.start = self._grid[y][x]
+        (x, y) = config.exit
+        self.end = self._grid[y][x]
+        self.total_cells = sum(
+            1
+            for row in self._grid
+            for cell in row
+            if not cell.is_wall
+        )
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self._grid[pos]
@@ -106,23 +117,23 @@ class Grid:
 
     def show(self):
         print("§" + "---§" * self.width)
-        for y in range(self.height):
+        for row in self._grid:
             line = "|"
-            for x in range(self.width):
-                if self[y][x].is_wall:
+            for cell in row:
+                if cell.is_wall:
                     line += " # "
-                elif self[y][x].occupied:
+                elif cell.occupied:
                     line += " . "
                 else:
                     line += "   "
-                if self._grid[y][x].walls.east:
+                if cell.walls.east:
                     line += "|"
                 else:
                     line += " "
             print(line)
             line = "§"
-            for x in range(self.width):
-                if self._grid[y][x].walls.south:
+            for cell in row:
+                if cell.walls.south:
                     line += "---§"
                 else:
                     line += "   §"
@@ -158,9 +169,28 @@ class Grid:
             self._grid[y + 4][x + 5].is_wall = True
             self._grid[y + 4][x + 6].is_wall = True
 
+    def __iter__(self):
+        for row in self._grid:
+            for cell in row:
+                if not cell.is_wall:
+                    yield cell
+
+    def clean(self) -> None:
+        for cell in self:
+            cell.occupied = False
+
+    @classmethod
+    def Build(cls, width: int, height: int):
+        config = ConfigBase()
+        config.width = width
+        config.height = height
+        config.entry = (0, 0)
+        config.exit = (config.width - 1, config.height - 1)
+        return cls(config)
+
 
 if __name__ == "__main__":
-    grid = Grid(4, 4)
+    grid = Grid.Build(4, 4)
     grid.open_wall(Coordinate(0, 0), Direction.SOUTH)
     grid.open_wall(Coordinate(0, 1), Direction.SOUTH)
     grid.open_wall(Coordinate(0, 2), Direction.SOUTH)

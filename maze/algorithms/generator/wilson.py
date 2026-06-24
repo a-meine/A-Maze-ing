@@ -1,11 +1,11 @@
-from maze.algorithms.maze_algorithm import MazeAlgorithm
+from maze.algorithms.generator.base import GeneratorBase
 from maze.cell import Cell
-from config.base import ConfigBase
+from maze.grid import Grid
 
 
-class Wilson(MazeAlgorithm):
-    def __init__(self, config: ConfigBase) -> None:
-        super().__init__(config)
+class Wilson(GeneratorBase):
+    def __init__(self, grid: Grid) -> None:
+        super().__init__(grid)
         self.__occupied_cells = 1
 
     def __process_cell(self, cell: Cell):
@@ -15,8 +15,7 @@ class Wilson(MazeAlgorithm):
 
     def generate_maze(self) -> None:
         is_first_run = True
-        while self.__occupied_cells <= self._total_cells:
-            prev: None | Cell = None
+        while self.__occupied_cells <= self.grid.total_cells:
             path = self.find_path(is_first_run)
             prev = path[0]
             for cell in path[1:]:
@@ -61,11 +60,6 @@ class Wilson(MazeAlgorithm):
 
 
 if __name__ == "__main__":
-    config = ConfigBase()
-    config.width = 10
-    config.height = 10
-    config.entry = (0, 0)
-    config.exit = (config.width - 1, config.height - 1)
-    wilson = Wilson(config)
+    wilson = Wilson(Grid.Build(11, 11))
     wilson.generate_maze()
     wilson.grid.show()

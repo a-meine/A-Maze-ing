@@ -1,5 +1,4 @@
 import random
-from config.base import ConfigBase
 from abc import ABC, abstractmethod
 from typing import Callable
 from maze.cell import Cell
@@ -7,21 +6,11 @@ from maze.grid import Grid
 from maze.direction import Direction
 
 
-class MazeAlgorithm(ABC):
+class GeneratorBase(ABC):
     event: Callable[[Cell], None] | None = None
 
-    def __init__(self, config: ConfigBase) -> None:
-        self._grid = Grid(config.width, config.height)
-        (x, y) = config.entry
-        self._start_cell = self.grid[y][x]
-        (x, y) = config.exit
-        self._end_cell = self.grid[y][x]
-        self._total_cells = sum(
-            1
-            for row in self._grid._grid
-            for cell in row
-            if not cell.is_wall
-        )
+    def __init__(self, grid: Grid) -> None:
+        self._grid = grid
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self.grid[pos]
@@ -74,12 +63,6 @@ class MazeAlgorithm(ABC):
         if (include_occupied or not cell.occupied) and not cell.is_wall:
             return cell
         return self._get_random_cell(include_occupied)
-
-    def _clean(self) -> None:
-        for y in range(self.height):
-            for x in range(self.width):
-                self[y][x].occupied = False
-        self._start_cell.occupied = True
 
     def _trigger_event(self, cell: Cell):
         if self.event is not None:
