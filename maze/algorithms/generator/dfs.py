@@ -9,6 +9,9 @@ class DFS(GeneratorBase):
         self.__occupied_cells = 1
 
     def __process_cell(self, cell: Cell):
+        if cell.occupied:
+            self._trigger_event(cell)
+            return
         cell.occupied = True
         self.__occupied_cells += 1
         self._trigger_event(cell)
@@ -22,10 +25,12 @@ class DFS(GeneratorBase):
                 cell = history.pop()
                 continue
             self.grid.open_wall(cell.coordinate, direction)
-            cell = self.get_neighbor(cell, direction)
-            self.__process_cell(cell)
+            neighbor = self.get_neighbor(cell, direction)
+            self.__process_cell(neighbor)
             if self.grid.available_direction(cell.coordinate):
                 history.append(cell)
+            cell = neighbor
+        self.__process_cell(cell)
         self.grid.clean()
 
 
