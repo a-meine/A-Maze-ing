@@ -6,6 +6,7 @@ class Cell:
 
     def __init__(self, coordinate: Coordinate):
         self.coordinate = coordinate
+        self.is_wall = False
         self.occupied = False
         self.walls = Walls()
 

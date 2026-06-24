@@ -16,7 +16,12 @@ class MazeAlgorithm(ABC):
         self._start_cell = self.grid[y][x]
         (x, y) = config.exit
         self._end_cell = self.grid[y][x]
-        self._total_cells = self.width * self.height
+        self._total_cells = sum(
+            1
+            for row in self._grid._grid
+            for cell in row
+            if not cell.is_wall
+        )
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self.grid[pos]
@@ -66,7 +71,7 @@ class MazeAlgorithm(ABC):
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
         cell = self[y][x]
-        if include_occupied or not cell.occupied:
+        if (include_occupied or not cell.occupied) and not cell.is_wall:
             return cell
         return self._get_random_cell(include_occupied)
 

@@ -33,8 +33,8 @@ class DFS(MazeAlgorithm):
 
 if __name__ == "__main__":
     config = ConfigBase()
-    config.width = 5
-    config.height = 5
+    config.width = 9
+    config.height = 7
     config.entry = (0, 0)
     config.exit = (config.width - 1, config.height - 1)
     dfs = DFS(config)

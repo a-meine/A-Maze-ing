@@ -5,13 +5,14 @@ from maze.direction import Direction
 
 class Grid:
 
-    def __init__(self, width: int, height: int, ):
+    def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
         self._grid: list[list[Cell]] = [
             [Cell(Coordinate(x, y)) for x in range(width)]
             for y in range(height)
         ]
+        self.__wall_42()
 
     def __getitem__(self, pos: int) -> list[Cell]:
         return self._grid[pos]
@@ -49,18 +50,22 @@ class Grid:
         self.__set_wall(coordinate, wall, True)
 
     def get_neighbor(self, cell: Cell, direction: Direction) -> Cell | None:
+        result: Cell | None = None
         if direction == Direction.NORTH and cell.coordinate.y != 0:
-            return self._grid[cell.coordinate.y - 1][cell.coordinate.x]
+            result = self._grid[cell.coordinate.y - 1][cell.coordinate.x]
         elif (direction == Direction.EAST and
               cell.coordinate.x != self.width - 1):
-            return self._grid[cell.coordinate.y][cell.coordinate.x + 1]
+            result = self._grid[cell.coordinate.y][cell.coordinate.x + 1]
         elif (direction == Direction.SOUTH and
                 cell.coordinate.y != self.height - 1):
-            return self._grid[cell.coordinate.y + 1][cell.coordinate.x]
+            result = self._grid[cell.coordinate.y + 1][cell.coordinate.x]
         elif direction == Direction.WEST and cell.coordinate.x != 0:
-            return self._grid[cell.coordinate.y][cell.coordinate.x - 1]
+            result = self._grid[cell.coordinate.y][cell.coordinate.x - 1]
         else:
             return None
+        if result.is_wall:
+            return None
+        return result
 
     def get_direction(self, cell_1: Cell, cell_2: Cell) -> Direction | None:
         if (
@@ -104,7 +109,9 @@ class Grid:
         for y in range(self.height):
             line = "|"
             for x in range(self.width):
-                if self[y][x].occupied:
+                if self[y][x].is_wall:
+                    line += " # "
+                elif self[y][x].occupied:
                     line += " . "
                 else:
                     line += "   "
@@ -120,6 +127,36 @@ class Grid:
                 else:
                     line += "   §"
             print(line)
+
+    def __wall_42(self):
+        fourtytwo_wall_height = 6
+        fourtytwo_wall_width = 8
+        if (
+            self.width >= fourtytwo_wall_width
+            and self.height > fourtytwo_wall_height
+        ):
+            x = (self.width // 2) - ((fourtytwo_wall_width - 1) // 2)
+            y = (self.height // 2) - ((fourtytwo_wall_height - 1) // 2)
+            # letter 4
+            self._grid[y][x].is_wall = True
+            self._grid[y + 1][x].is_wall = True
+            self._grid[y + 2][x].is_wall = True
+            self._grid[y + 2][x + 1].is_wall = True
+            self._grid[y + 2][x + 2].is_wall = True
+            self._grid[y + 3][x + 2].is_wall = True
+            self._grid[y + 4][x + 2].is_wall = True
+            # letter 2
+            self._grid[y][x + 4].is_wall = True
+            self._grid[y][x + 5].is_wall = True
+            self._grid[y][x + 6].is_wall = True
+            self._grid[y + 1][x + 6].is_wall = True
+            self._grid[y + 2][x + 6].is_wall = True
+            self._grid[y + 2][x + 5].is_wall = True
+            self._grid[y + 2][x + 4].is_wall = True
+            self._grid[y + 3][x + 4].is_wall = True
+            self._grid[y + 4][x + 4].is_wall = True
+            self._grid[y + 4][x + 5].is_wall = True
+            self._grid[y + 4][x + 6].is_wall = True
 
 
 if __name__ == "__main__":
