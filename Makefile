@@ -5,6 +5,7 @@ SRC := $(PREFIX)/src
 KEYSYMS_VER := 0.4.1
 
 all: mlx
+	uv run a_maze_ing.py config.txt
 
 dependecy:
 	@if [ ! -f "$(PREFIX)/include/xcb/xcb_keysyms.h" ]; then \
