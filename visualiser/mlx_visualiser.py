@@ -2,12 +2,13 @@ from mlx import Mlx
 # from ctypes import c_uint
 # from typing import Any
 import time
+from maze.cell import Cell
+from maze.grid import Grid
 from visualiser.buttons import Button
 from visualiser.input_fields import InputField
-from maze.algorithms.dfs import DFS
+from maze.algorithms.generator.dfs import DFS
 # import asyncio
-from maze.config_parser import Config
-
+from config.parser import Config
 
 
 def rgb(r: int, g: int, b: int) -> int:
@@ -19,6 +20,7 @@ TILE_SIZE = 10
 
 # TODO: organise the draw() initia;ise()
 
+
 class Window:
     """
     This class is intended to organise the whole process of intialising,
@@ -29,19 +31,18 @@ class Window:
         self.win_width = 1800
         self.win_height = 1200
         self.conifg = config
+        print(self.conifg)
         self.m = Mlx()
         self.mlx_ptr = self.m.mlx_init()
-        self.win_ptr = self.m.mlx_new_window(self.mlx_ptr,
-                                             self.win_width,
-                                             self.win_height,
-                                             "a_maze_ing")
+        self.win_ptr = self.m.mlx_new_window(
+            self.mlx_ptr, self.win_width, self.win_height, "a_maze_ing"
+        )
         self.m.mlx_clear_window(self.mlx_ptr, self.win_ptr)
-
         (ret, w, h) = self.m.mlx_get_screen_size(self.mlx_ptr)
         # print(f"Got screen size: {w} x {h} .")
 
         self.entry_ = self.conifg.entry
-        self.exit_ = self.conifg.exit_
+        self.exit = self.conifg.exit
         self.menu()
 
     def conifg_images(self):
@@ -50,9 +51,10 @@ class Window:
         self.grid_height = int(self.fields[1].text or self.conifg.height)
 
         self.entry_ = (int(self.fields[2].text), int(self.fields[3].text))
-        self.exit_ = (int(self.fields[4].text), int(self.fields[5].text))
+        self.exit = (int(self.fields[4].text), int(self.fields[5].text))
 
-        self.mt_grid = DFS(self.grid_width, self.grid_height)
+        self.mt_grid = DFS(Grid(self.conifg))
+        self.mt_grid.event = self.render
 
         maze_width_fscale = 0.8
         self.ralative_x_offset = int(self.win_width * 0.28)
@@ -90,6 +92,7 @@ class Window:
 
     def test(self):
         pass
+
     def image_manger(self):
         self.conifg_images()
         self.intialise_images()
@@ -113,68 +116,73 @@ class Window:
         self.draw_menu_background(
             self.menu_w, self.menu_h, self.menu_offset_x, self.menu_offset_y)
 
+    def render(self, cell: Cell):
+        rx = 2 * cell.coordinate.x + 1
+        ry = 2 * cell.coordinate.y + 1
+
+        px = self.offset_x + rx * self.tile_width
+        py = self.offset_y + ry * self.tile_height
+
+        self.m.mlx_put_image_to_window(
+            self.mlx_ptr, self.win_ptr, self.cell_img_ptr, px, py
+        )
+        if (cell.coordinate.x, cell.coordinate.y) == self.entry_:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.entry_cell, px, py
+                )
+
+        if (cell.coordinate.x, cell.coordinate.y) == self.exit:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.exit_cell, px, py
+                )
+
+        # east
+        if not cell.walls.east:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
+                self.offset_x + (rx + 1) * self.tile_width,
+                self.offset_y + ry * self.tile_height
+            )
+
+        # south
+        if not cell.walls.south:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
+                self.offset_x + rx * self.tile_width,
+                self.offset_y + (ry + 1) * self.tile_height
+            )
+
+        # north
+        if not cell.walls.north:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
+                self.offset_x + rx * self.tile_width,
+                self.offset_y + (ry - 1) * self.tile_height
+            )
+
+        # west
+        if not cell.walls.west:
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
+                self.offset_x + (rx - 1) * self.tile_width,
+                self.offset_y + ry * self.tile_height
+            )
+        self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_FLUSH,
+                        self.win_ptr)
+        time.sleep(1/35)
+    
     def run_and_render_maze(self):
         """"""
         self.image_manger()
-        for cell in self.mt_grid.generate_maze():
-            rx = 2 * cell.coordinate.x + 1
-            ry = 2 * cell.coordinate.y + 1
-
-            px = self.offset_x + rx * self.tile_width
-            py = self.offset_y + ry * self.tile_height
-
-            self.m.mlx_put_image_to_window(
-                self.mlx_ptr, self.win_ptr, self.cell_img_ptr, px, py
-            )
-            if (cell.coordinate.x, cell.coordinate.y) == self.entry_:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.entry_cell, px, py
-                    )
-
-            if (cell.coordinate.x, cell.coordinate.y) == self.exit_:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.exit_cell, px, py
-                    )
-
-            # east
-            if not cell.walls.east:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
-                    self.offset_x + (rx + 1) * self.tile_width,
-                    self.offset_y + ry * self.tile_height
-                )
-
-            # south
-            if not cell.walls.south:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
-                    self.offset_x + rx * self.tile_width,
-                    self.offset_y + (ry + 1) * self.tile_height
-                )
-
-            # north
-            if not cell.walls.north:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
-                    self.offset_x + rx * self.tile_width,
-                    self.offset_y + (ry - 1) * self.tile_height
-                )
-
-            # west
-            if not cell.walls.west:
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr, self.cell_img_ptr,
-                    self.offset_x + (rx - 1) * self.tile_width,
-                    self.offset_y + ry * self.tile_height
-                )
-            self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_FLUSH,
-                            self.win_ptr)
-            time.sleep(1/35)
+        self.mt_grid.generate_maze()
         # mt_grid._grid.show()
 
     def menu(self):
         # register buttons
         self.buttons = [
+            Button(
+                200, 200, 300, 60, "Re-Generate", (0, 255, 0), (255, 0, 0),
+                action=self.regen),
             Button(
                 200, 200, 300, 60, "Re-Generate", (0, 255, 0), (255, 0, 0),
                 action=self.regen),
@@ -189,8 +197,8 @@ class Window:
             InputField(450, 300, 70, 30, "height", str(self.conifg.height)),
             InputField(200, 400, 20, 20, "", str(self.conifg.entry[0])),
             InputField(223, 400, 20, 20, "", str(self.conifg.entry[1])),
-            InputField(200, 450, 20, 20, "", str(self.conifg.exit_[0])),
-            InputField(223, 450, 20, 20, "", str(self.conifg.exit_[1]))
+            InputField(200, 450, 20, 20, "", str(self.conifg.exit[0])),
+            InputField(223, 450, 20, 20, "", str(self.conifg.exit[1]))
         ]
 
     def redraw_menu(self):

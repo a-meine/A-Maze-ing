@@ -1,13 +1,14 @@
 .PHONY: all deps mlx clean fclean re
-
 PREFIX := $(HOME)/local
 SRC := $(PREFIX)/src
 KEYSYMS_VER := 0.4.1
+MLX = mlx-2.2-py3-none-any.whl
+DEPENDECY = $(PREFIX)/include/xcb/xcb_keysyms.h
 
-all: mlx
+all: $(MLX)
 	uv run a_maze_ing.py config.txt
 
-dependecy:
+$(DEPENDECY):
 	@if [ ! -f "$(PREFIX)/include/xcb/xcb_keysyms.h" ]; then \
 		mkdir -p "$(SRC)"; \
 		cd "$(SRC)" && \
@@ -20,7 +21,7 @@ dependecy:
 		make install; \
 	fi
 
-mlx: dependecy
+$(MLX): $(DEPENDECY)
 	rm -rf mlx_CLXV
 	git clone git@github.com:42school/mlx_CLXV.git
 	cd mlx_CLXV && \
@@ -38,10 +39,11 @@ mlx: dependecy
 	rm -rf mlx_CLXV
 
 clean:
-	rm -rf mlx_CLXV
+	echo "cleaned"
 
 fclean: clean
 	rm -rf "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER)"
 	rm -f "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER).tar.xz"
+	rm $(MLX)
 
 re: clean all

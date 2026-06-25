@@ -66,4 +66,7 @@ class GeneratorBase(ABC):
 
     def _trigger_event(self, cell: Cell):
         if self.event is not None:
-            self.event(cell)
+            try:
+                self.event(cell)
+            except Exception as ex:
+                print(ex)
