@@ -6,7 +6,7 @@ from maze.grid import Grid
 class Wilson(GeneratorBase):
     def __init__(self, grid: Grid) -> None:
         super().__init__(grid)
-        self.__occupied_cells = 1
+        self.__occupied_cells = 0
 
     def __process_cell(self, cell: Cell):
         cell.occupied = True
@@ -15,7 +15,7 @@ class Wilson(GeneratorBase):
 
     def generate_maze(self) -> None:
         is_first_run = True
-        while self.__occupied_cells <= self.grid.total_cells:
+        while self.__occupied_cells < self.grid.total_cells:
             path = self.find_path(is_first_run)
             prev = path[0]
             for cell in path[1:]:
@@ -26,6 +26,7 @@ class Wilson(GeneratorBase):
             if is_first_run:
                 is_first_run = False
                 self.__process_cell(prev)
+        self.grid.clean()
 
     def find_path(self, is_first_run: bool = False):
         start = self._get_random_cell()
