@@ -42,9 +42,11 @@ class DFS:
 
     def generate_maze(self):
         history: list[Cell] = []
+        # random.seed(42)
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
         start: Cell = self._grid[y][x]
+        yield start
         start.occupied = True
         history.append(start)
         while True:

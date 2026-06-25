@@ -17,6 +17,7 @@ class Grid:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self._grid = []
         for y in range(height):
             new_cells = []
             for x in range(width):
