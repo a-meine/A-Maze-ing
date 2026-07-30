@@ -30,7 +30,8 @@ class Prim(GeneratorBase):
             cell = random.choice(queue)
             queue.remove(cell)
 
-            visited_neighbors = [n for n in self.neighbors(cell) if n in visited]
+            visited_neighbors = [
+                n for n in self.neighbors(cell) if n in visited]
             if len(visited_neighbors):
                 proc_cell = random.choice(visited_neighbors)
                 direction = self.get_direction(proc_cell, cell)
@@ -42,6 +43,7 @@ class Prim(GeneratorBase):
                     if n not in visited and n not in queue:
                         queue.append(n)
         self.grid.show()
+
 
 if __name__ == "__main__":
     prim = Prim(Grid.Build(11, 11))

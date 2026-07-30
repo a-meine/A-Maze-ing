@@ -7,7 +7,7 @@ from maze.direction import Direction
 
 
 class GeneratorBase(ABC):
-    event: Callable[[Cell], None] | None = None
+    event: Callable[[Cell, bool], None] | None = None
 
     def __init__(self, grid: Grid) -> None:
         self._grid = grid
@@ -64,7 +64,7 @@ class GeneratorBase(ABC):
             return cell
         return self._get_random_cell(include_occupied)
 
-    def _trigger_event(self, cell: Cell, sync: bool = True):
+    def _trigger_event(self, cell: Cell, sync: bool = True) -> None:
         if self.event is not None:
             try:
                 self.event(cell, sync)

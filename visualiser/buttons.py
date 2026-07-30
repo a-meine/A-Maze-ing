@@ -1,7 +1,7 @@
 
 from dataclasses import dataclass
 from typing import Callable
-
+from typing import Any
 
 @dataclass
 class Button:
@@ -13,7 +13,7 @@ class Button:
     color_normal: tuple[int, int, int]
     color_pressed: tuple[int, int, int]
     pressed: bool = False
-    action: Callable | None = None
+    action: Callable[..., Any] | None = None
 
     def contains(self, mx: int, my: int) -> bool:
         return (self.x <= mx < self.x + self.w) and (

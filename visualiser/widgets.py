@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Callable
+from dataclasses import dataclass
+from typing import Any, Callable
 
 
-def fill_image(m, img, w: int, h: int, color: tuple[int, int, int],
-               margin_x: int = 0, margin_y: int = 0):
+def fill_image(m: Any, img: Any, w: int, h: int,
+                color: tuple[int, int, int],
+                margin_x: int = 0, margin_y: int = 0) -> None:
     data, bpp, size_line, endian = m.mlx_get_data_addr(img)
     r, g, b = color
     for y in range(margin_y, h - margin_y):
@@ -31,15 +32,16 @@ class Button:
     color_normal: tuple[int, int, int]
     color_pressed: tuple[int, int, int]
     pressed: bool = False
-    action: Callable | None = None
-    
+    action: Callable[..., None] | None = None
+
     _img = None
     _last_pressed: bool | None = None
 
     def contains(self, mx: int, my: int) -> bool:
-        return self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h
+        return (
+            self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
-    def draw(self, m, mlx_ptr, win_ptr) -> None:
+    def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
         if self._img is None or self._last_pressed != self.pressed:
             self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
             color = self.color_pressed if self.pressed else self.color_normal
@@ -61,15 +63,16 @@ class InputField:
     label: str
     text: str = ""
     focused: bool = False
-    action: Callable | None = None
+    action: Callable[..., None] | None = None
 
     _img = None
     _last_focused: bool | None = None
 
     def contains(self, mx: int, my: int) -> bool:
-        return self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h
+        return (
+            self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
-    def draw(self, m, mlx_ptr, win_ptr) -> None:
+    def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
         if self._img is None or self._last_focused != self.focused:
             self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
             color = FOCUSED_COLOR if self.focused else UNFOCUSED_COLOR

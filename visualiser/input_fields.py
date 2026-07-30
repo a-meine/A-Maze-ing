@@ -11,7 +11,7 @@ class InputField:
     label: str
     text: str = ""
     focused: bool = False
-    action: Callable | None = None
+    action: Callable[..., None] | None = None
     # coordinate: bool = False
 
     def contains(self, mx: int, my: int) -> bool:

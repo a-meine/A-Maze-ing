@@ -8,7 +8,7 @@ class Wilson(GeneratorBase):
         super().__init__(grid)
         self.__occupied_cells = 0
 
-    def __process_cell(self, cell: Cell):
+    def __process_cell(self, cell: Cell) -> None:
         cell.occupied = True
         self._trigger_event(cell)
         self.__occupied_cells += 1
@@ -28,7 +28,7 @@ class Wilson(GeneratorBase):
                 self.__process_cell(prev)
         self.grid.clean()
 
-    def find_path(self, is_first_run: bool = False):
+    def find_path(self, is_first_run: bool = False) -> list[Cell]:
         start = self._get_random_cell()
         destination = start
         if is_first_run:

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from config.parser import Config
 
@@ -26,7 +27,7 @@ class Layout:
     menu_h: int
 
     @classmethod
-    def compute(cls, fields, config: Config,
+    def compute(cls, fields: list[Any], config: Config,
                 win_width: int, win_height: int) -> "Layout":
         grid_width = int(fields[0].text or config.width)
         grid_height = int(fields[1].text or config.height)

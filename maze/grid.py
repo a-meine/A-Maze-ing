@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from config.base import ConfigBase
 from maze.cell import Cell
 from maze.coordinate import Coordinate
@@ -28,7 +30,7 @@ class Grid:
     def __getitem__(self, pos: int) -> list[Cell]:
         return self._grid[pos]
 
-    def __setitem__(self, pos: int, value: list[Cell]):
+    def __setitem__(self, pos: int, value: list[Cell]) -> None:
         self._grid[pos] = value
 
     def __set_wall(
@@ -103,7 +105,7 @@ class Grid:
             return None
 
     def available_direction(
-            self, source: Coordinate, include_occupied: bool = False):
+            self, source: Coordinate, include_occupied: bool = False) -> list[Direction]:
         usable: list[Direction] = []
         cell = self._grid[source.y][source.x]
         for direction in Direction:
@@ -115,7 +117,7 @@ class Grid:
                 usable.append(direction)
         return usable
 
-    def show(self):
+    def show(self) -> None:
         print("§" + "---§" * self.width)
         for row in self._grid:
             line = "|"
@@ -139,7 +141,7 @@ class Grid:
                     line += "   §"
             print(line)
 
-    def __wall_42(self):
+    def __wall_42(self) -> None:
         fourtytwo_wall_height = 6
         fourtytwo_wall_width = 8
         if (
@@ -169,7 +171,7 @@ class Grid:
             self._grid[y + 4][x + 5].is_wall = True
             self._grid[y + 4][x + 6].is_wall = True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Cell]:
         for row in self._grid:
             for cell in row:
                 if not cell.is_wall:
@@ -180,7 +182,7 @@ class Grid:
             cell.occupied = False
 
     @classmethod
-    def Build(cls, width: int, height: int):
+    def Build(cls, width: int, height: int) -> Grid:
         config = ConfigBase()
         config.width = width
         config.height = height

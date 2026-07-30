@@ -1,11 +1,13 @@
 from mlx import Mlx
-import time
+from typing import Any
+# import time
 from maze.cell import Cell
 from maze.grid import Grid
 from maze.algorithms.generator.randomised_prim import Prim
 from maze.algorithms.generator.dfs import DFS
 from maze.algorithms.solution.bfs import BFS
 from config.parser import Config, load_config
+from maze.encoding import write_output
 from visualiser.widgets import Button, InputField, fill_image
 from visualiser.layout import Layout
 
@@ -46,47 +48,49 @@ class Window:
         self.solution_path: list[Cell] = []
         self.show_path = True
 
-    def _build_grid(self):
+    def _build_grid(self) -> Any:
         grid = Grid(self.config)
         if self.algorithm == "dfs":
             return DFS(grid)
         return Prim(grid)
 
-    def config_images(self):
+    def config_images(self) -> None:
         self.layout = Layout.compute(
             self.fields, self.config, self.win_width, self.win_height
         )
         self.grid = self._build_grid()
         self.grid.event = self.render
 
-    def apply_settings(self):
+    def apply_settings(self) -> None:
         self.config_images()
         self.initialise_images()
         self.redraw_menu()
         self.render_grid()
 
-    def _solve_path(self):
+    def _solve_path(self) -> None:
         try:
             solver = BFS(self.grid.grid)
             self.solution_path = solver.solve()
         except Exception:
             self.solution_path = []
 
-    def _make_tile(self, color, margin_x=0, margin_y=0):
-        l = self.layout
+    def _make_tile(self, color: tuple[int, int, int],
+                    margin_x: int = 0, margin_y: int = 0) -> Any:
+        l: Layout = self.layout
         img = self.m.mlx_new_image(
             self.mlx_ptr, l.tile_width, l.tile_height)
         fill_image(self.m, img, l.tile_width, l.tile_height,
                    color, margin_x, margin_y)
         return img
 
-    def _make_solid_image(self, w, h, color=MED_GRAY):
+    def _make_solid_image(self, w: int, h: int,
+                          color: tuple[int, int, int] = MED_GRAY) -> Any:
         img = self.m.mlx_new_image(self.mlx_ptr, w, h)
         fill_image(self.m, img, w, h, color)
         return img
 
-    def initialise_images(self):
-        l = self.layout
+    def initialise_images(self) -> None:
+        l: Layout = self.layout
         self.cell_img_ptr = self._make_tile(WHITE)
         self.entry_cell = self._make_tile(GREEN)
         self.next_cell_img_ptr = self._make_tile(MAGENTA)
@@ -99,8 +103,8 @@ class Window:
         self.maze_background_img = self._make_solid_image(l.maze_w, l.maze_h)
         self.menu_background_img = self._make_solid_image(l.menu_w, l.menu_h)
 
-    def _render_walls(self, cell, rx, ry):
-        l = self.layout
+    def _render_walls(self, cell: Cell, rx: int, ry: int) -> None:
+        l: Layout = self.layout
         walls = [
             (cell.walls.east,  rx + 1, ry),
             (cell.walls.south, rx,     ry + 1),
@@ -115,7 +119,7 @@ class Window:
                 l.offset_x + tx * l.tile_width,
                 l.offset_y + ty * l.tile_height)
 
-    def _render_entry_exit(self, cell, px, py):
+    def _render_entry_exit(self, cell: Cell, px: int, py: int) -> None:
         coord = (cell.coordinate.x, cell.coordinate.y)
         if coord == self.layout.entry:
             self.m.mlx_put_image_to_window(
@@ -124,7 +128,7 @@ class Window:
             self.m.mlx_put_image_to_window(
                 self.mlx_ptr, self.win_ptr, self.exit_cell, px, py)
 
-    def _render_cell_state(self, cell, px, py):
+    def _render_cell_state(self, cell: Cell, px: int, py: int) -> None:
         if cell.occupied:
             self.m.mlx_put_image_to_window(
                 self.mlx_ptr, self.win_ptr, self.next_cell_img_ptr, px, py)
@@ -135,8 +139,8 @@ class Window:
             self.m.mlx_put_image_to_window(
                 self.mlx_ptr, self.win_ptr, self.next_cell_img_ptr, px, py)
 
-    def render(self, cell: Cell, sync: bool = True):
-        l = self.layout
+    def render(self, cell: Cell, sync: bool = True) -> None:
+        l: Layout = self.layout
         rx = 2 * cell.coordinate.x + 1
         ry = 2 * cell.coordinate.y + 1
         px = l.offset_x + rx * l.tile_width
@@ -148,8 +152,8 @@ class Window:
                             self.win_ptr)
         self._render_cell_state(cell, px, py)
 
-    def render_grid(self):
-        l = self.layout
+    def render_grid(self) -> None:
+        l: Layout = self.layout
         for y in range(l.rend_tiles_y):
             for x in range(l.rend_tiles_x):
                 px = l.offset_x + x * l.tile_width
@@ -163,8 +167,8 @@ class Window:
                         self.win_ptr)
         self._render_path()
 
-    def _render_path(self):
-        l = self.layout
+    def _render_path(self) -> None:
+        l: Layout = self.layout
         if self.show_path:
             for cell in self.solution_path:
                 rx = 2 * cell.coordinate.x + 1
@@ -176,7 +180,7 @@ class Window:
                     self.path_cell_img, px, py)
                 self._render_entry_exit(cell, px, py)
 
-    def _set_algorithm(self, algo):
+    def _set_algorithm(self, algo: str) -> None:
         self.algorithm = algo
         for btn in self.algo_buttons:
             is_active = btn.label.lower() == algo
@@ -184,7 +188,7 @@ class Window:
             btn.color_pressed = RED if is_active else INACTIVE_GRAY
         self.redraw_buttons()
 
-    def menu(self):
+    def menu(self) -> None:
         algo_buttons = [
             Button(205, 490, 50, 30, "DFS",
                    INACTIVE_GRAY, INACTIVE_GRAY,
@@ -221,8 +225,8 @@ class Window:
                        str(self.config.exit[1])),
         ]
 
-    def redraw_menu(self):
-        l = self.layout
+    def redraw_menu(self) -> None:
+        l: Layout = self.layout
         self.m.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.background_img, 0, 0)
         self.m.mlx_put_image_to_window(
@@ -239,19 +243,19 @@ class Window:
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
                         self.win_ptr)
 
-    def redraw_buttons(self):
+    def redraw_buttons(self) -> None:
         for btn in self.buttons:
             btn.draw(self.m, self.mlx_ptr, self.win_ptr)
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
                         self.win_ptr)
 
-    def redraw_fields(self):
+    def redraw_fields(self) -> None:
         for field in self.fields:
             field.draw(self.m, self.mlx_ptr, self.win_ptr)
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
                         self.win_ptr)
 
-    def _focus_field_at(self, x, y):
+    def _focus_field_at(self, x: int, y: int) -> bool:
         clicked = False
         for field in self.fields:
             if field.contains(x, y):
@@ -261,17 +265,18 @@ class Window:
                 field.focused = False
         return clicked
 
-    def _clear_focus(self):
+    def _clear_focus(self) -> None:
         for field in self.fields:
             field.focused = False
 
-    def _active_field(self):
+    def _active_field(self) -> InputField | None:
         for field in self.fields:
             if field.focused:
                 return field
         return None
 
-    def start_mouse_hook(self, button, x, y, mystuff):
+    def start_mouse_hook(self, button: int, x: int, y: int,
+                             mystuff: Any) -> None:
         if button != 1:
             return
         if self._focus_field_at(x, y):
@@ -289,7 +294,7 @@ class Window:
         self._clear_focus()
         self.redraw_fields()
 
-    def start_key_hook(self, keynum, mystuff):
+    def start_key_hook(self, keynum: int, mystuff: Any) -> None:
         if keynum == KEY_ESC:
             self.close(None)
             return
@@ -303,7 +308,7 @@ class Window:
             active.text += chr(keynum)
             self.redraw_fields()
 
-    def toggle_path(self):
+    def toggle_path(self) -> None:
         self.show_path = not self.show_path
         for btn in self.buttons:
             if btn.action == self.toggle_path:
@@ -311,13 +316,14 @@ class Window:
         self.redraw_buttons()
         self.render_grid()
 
-    def regen(self):
+    def regen(self) -> None:
         self.apply_settings()
         self.grid.generate_maze()
         self._solve_path()
+        write_output(self.grid.grid, self.config, self.solution_path)
         self._render_path()
 
-    def close(self, dummy) -> None:
+    def close(self, dummy: Any) -> None:
         print("closing...")
         self.m.mlx_loop_exit(self.mlx_ptr)
 

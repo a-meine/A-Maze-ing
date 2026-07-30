@@ -8,7 +8,7 @@ class DFS(GeneratorBase):
         super().__init__(grid)
         self.__occupied_cells = 1
 
-    def __process_cell(self, cell: Cell):
+    def __process_cell(self, cell: Cell) -> None:
         if cell.occupied:
             self._trigger_event(cell)
             return
