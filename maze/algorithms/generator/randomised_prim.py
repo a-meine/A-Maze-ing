@@ -43,6 +43,7 @@ class Prim(GeneratorBase):
                         queue.append(n)
         self.grid.show()
 
+
 if __name__ == "__main__":
     prim = Prim(Grid.Build(11, 11))
     prim.generate_maze()

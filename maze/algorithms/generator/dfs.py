@@ -6,7 +6,7 @@ from maze.grid import Grid
 class DFS(GeneratorBase):
     def __init__(self, grid: Grid) -> None:
         super().__init__(grid)
-        self.__occupied_cells = 1
+        self.__occupied_cells = 0
 
     def __process_cell(self, cell: Cell):
         if cell.occupied:

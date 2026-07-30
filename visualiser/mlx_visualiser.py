@@ -1,5 +1,4 @@
 from mlx import Mlx
-import time
 from maze.cell import Cell
 from maze.grid import Grid
 from maze.algorithms.generator.randomised_prim import Prim
