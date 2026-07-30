@@ -64,9 +64,9 @@ class GeneratorBase(ABC):
             return cell
         return self._get_random_cell(include_occupied)
 
-    def _trigger_event(self, cell: Cell):
+    def _trigger_event(self, cell: Cell, sync: bool = True):
         if self.event is not None:
             try:
-                self.event(cell)
+                self.event(cell, sync)
             except Exception as ex:
                 print(ex)

@@ -23,7 +23,7 @@ $(DEPENDECY):
 
 $(MLX): $(DEPENDECY)
 	rm -rf mlx_CLXV
-	git clone git@github.com:42school/mlx_CLXV.git
+	it clone git@github.com:42school/mlx_CLXV.git
 	cd mlx_CLXV && \
 	LOCAL_PREFIX="$(PREFIX)" && \
 	FILE="Makefile" && \

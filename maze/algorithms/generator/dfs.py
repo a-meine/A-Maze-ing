@@ -20,6 +20,7 @@ class DFS(GeneratorBase):
         cell = self.grid.start
         history = [cell]
         while self.__occupied_cells < self.grid.total_cells:
+            self._trigger_event(cell)
             direction = self._get_random_direction(cell)
             if direction is None:
                 cell = history.pop()

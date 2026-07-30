@@ -29,3 +29,10 @@ test the install
 ```bash
 python3 -c "from mlx.mlx import Mlx; print(Mlx)"
 ```
+
+
+
+
+
+## Resources:
+- [Maze Generation: Algorithm Recap](https://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap)

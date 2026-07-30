@@ -2,8 +2,8 @@
 
 import sys
 from config.parser import load_config
+# from visualiser.mlx_visualiser import Window
 from visualiser.mlx_visualiser import Window
-
 
 if __name__ == "__main__":
     if len(sys.argv[1:]) != 1:
