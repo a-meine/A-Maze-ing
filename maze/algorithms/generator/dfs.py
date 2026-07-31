@@ -6,7 +6,7 @@ from maze.grid import Grid
 class DFS(GeneratorBase):
     def __init__(self, grid: Grid) -> None:
         super().__init__(grid)
-        self.__occupied_cells = 1
+        self.__occupied_cells = 0
 
     def __process_cell(self, cell: Cell) -> None:
         if cell.occupied:
@@ -36,6 +36,6 @@ class DFS(GeneratorBase):
 
 
 if __name__ == "__main__":
-    dfs = DFS(Grid.Build(11, 11))
+    dfs = DFS(Grid.Build(50, 50))
     dfs.generate_maze()
     dfs.grid.show()

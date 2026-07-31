@@ -182,7 +182,7 @@ class Grid:
             cell.occupied = False
 
     @classmethod
-    def Build(cls, width: int, height: int) -> Grid:
+    def Build(cls, width: int, height: int) -> "Grid":
         config = ConfigBase()
         config.width = width
         config.height = height
