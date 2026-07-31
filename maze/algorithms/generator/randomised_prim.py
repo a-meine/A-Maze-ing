@@ -69,7 +69,6 @@ class Prim(GeneratorBase):
                 for n in self.neighbors(cell):
                     if n not in visited and n not in queue:
                         queue.append(n)
-        self.grid.show()
 
 
 if __name__ == "__main__":

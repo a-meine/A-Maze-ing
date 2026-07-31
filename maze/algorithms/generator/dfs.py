@@ -18,7 +18,7 @@ class DFS(GeneratorBase):
             grid (Grid): The grid to generate the maze on.
         """
         super().__init__(grid)
-        self.__occupied_cells = 1
+        self.__occupied_cells = 0
 
     def __process_cell(self, cell: Cell) -> None:
         """Process a single cell during maze generation.
@@ -62,6 +62,6 @@ class DFS(GeneratorBase):
 
 
 if __name__ == "__main__":
-    dfs = DFS(Grid.build(11, 11))
+    dfs = DFS(Grid.Build(50, 50))
     dfs.generate_maze()
     dfs.grid.show()

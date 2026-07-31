@@ -143,12 +143,8 @@ class GeneratorBase(ABC):
         Returns:
             Cell: A random non-wall cell.
         """
-        x = random.randint(0, self.width - 1)
-        y = random.randint(0, self.height - 1)
-        cell = self[y][x]
-        if (include_occupied or not cell.occupied) and not cell.is_wall:
-            return cell
-        return self._get_random_cell(include_occupied)
+        cell = random.choice([cell for cell in self.grid if not cell.occupied or include_occupied])
+        return cell
 
     def _trigger_event(self, cell: Cell, sync: bool = True) -> None:
         """Trigger the event callback for a cell.

@@ -277,17 +277,7 @@ class Grid:
             cell.occupied = False
 
     @classmethod
-    def build(cls, width: int, height: int) -> "Grid":
-        """Create a Grid instance with the specified dimensions.
-
-        Args:
-            cls: The Grid class.
-            width (int): The width of the grid.
-            height (int): The height of the grid.
-
-        Returns:
-            Grid: A new Grid instance with the given dimensions.
-        """
+    def Build(cls, width: int, height: int) -> "Grid":
         config = ConfigBase()
         config.width = width
         config.height = height
