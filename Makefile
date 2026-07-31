@@ -1,4 +1,4 @@
-.PHONY: all deps mlx clean fclean re
+.PHONY: all deps mlx clean fclean re install run debug lint lint-strict
 PREFIX := $(HOME)/local
 SRC := $(PREFIX)/src
 KEYSYMS_VER := 0.4.1
@@ -7,6 +7,36 @@ DEPENDECY = $(PREFIX)/include/xcb/xcb_keysyms.h
 
 all: $(MLX)
 	uv run a_maze_ing.py config.txt
+
+install:
+	uv sync
+
+run:
+	uv run a_maze_ing.py config.txt
+
+debug:
+	uv run python3 -m pdb a_maze_ing.py config.txt
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	rm -f output_maze.txt
+
+fclean: clean
+	rm -rf "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER)"
+	rm -f "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER).tar.xz"
+	rm $(MLX)
+
+lint:
+	uv run flake8 .
+	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+lint-strict:
+	uv run flake8 .
+	uv run mypy . --strict
+
+re: clean all
 
 $(DEPENDECY):
 	@if [ ! -f "$(PREFIX)/include/xcb/xcb_keysyms.h" ]; then \
@@ -37,13 +67,3 @@ $(MLX): $(DEPENDECY)
 	touch mlx_CLXV/python/src/mlx/py.typed
 	cd mlx_CLXV && make
 	rm -rf mlx_CLXV
-
-clean:
-	echo "cleaned"
-
-fclean: clean
-	rm -rf "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER)"
-	rm -f "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER).tar.xz"
-	rm $(MLX)
-
-re: clean all

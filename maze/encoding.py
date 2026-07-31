@@ -1,9 +1,24 @@
+"""maze.encoding module.
+
+Provides encoding and output functions for the maze.
+"""
 from maze.cell import Cell
 from maze.grid import Grid
 from config.parser import Config
 
 
 def cell_to_hex(cell: Cell) -> str:
+    """Convert a cell's wall configuration to a hex character.
+
+    Maps the four wall states (north, east, south, west) to a
+    bitmask and returns the corresponding hex digit.
+
+    Args:
+        cell (Cell): The cell to encode.
+
+    Returns:
+        str: A single uppercase hex character representing the wall state.
+    """
     bitmask = 0
     if cell.walls.north:
         bitmask |= 1 << 0
@@ -17,6 +32,18 @@ def cell_to_hex(cell: Cell) -> str:
 
 
 def path_to_direction_string(path: list[Cell], grid: Grid) -> str:
+    """Convert a path of cells to a directional string.
+
+    Iterates through consecutive cells in the path and determines
+    the direction of movement between them.
+
+    Args:
+        path (list[Cell]): The list of cells forming the path.
+        grid (Grid): The grid containing the cells.
+
+    Returns:
+        str: A string of direction characters (N, E, S, W).
+    """
     if not path or len(path) < 2:
         return ""
     result: list[str] = []
@@ -36,6 +63,16 @@ def path_to_direction_string(path: list[Cell], grid: Grid) -> str:
 
 def write_output(
         grid: Grid, config: Config, solution_path: list[Cell]) -> None:
+    """Write the maze output to the configured output file.
+
+    Encodes the maze grid as hex characters, then writes the entry
+    point, exit point, and solution path directions to the file.
+
+    Args:
+        grid (Grid): The maze grid to encode.
+        config (Config): The configuration containing the output file path.
+        solution_path (list[Cell]): The solution path to encode as directions.
+    """
     path_str = path_to_direction_string(solution_path, grid)
     try:
         with open(config.output_file, "w") as f:

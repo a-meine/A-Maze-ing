@@ -1,5 +1,5 @@
+"""maze.grid module."""
 from collections.abc import Iterator
-
 from config.base import ConfigBase
 from maze.cell import Cell
 from maze.coordinate import Coordinate
@@ -7,8 +7,27 @@ from maze.direction import Direction
 
 
 class Grid:
+    """Represents the maze grid of cells.
 
-    def __init__(self, config: ConfigBase):
+    Attributes:
+        width (int): The width of the grid in cells.
+        height (int): The height of the grid in cells.
+        _grid (list[list[Cell]]): The 2D list of cells.
+        start (Cell): The entry cell of the maze.
+        end (Cell): The exit cell of the maze.
+        total_cells (int): The total number of non-wall cells.
+    """
+
+    def __init__(self, config: ConfigBase) -> None:
+        """Initialize the grid from a configuration object.
+
+        Creates a grid of cells, sets up the entry and exit points,
+        and applies the wall_42 pattern if dimensions allow.
+
+        Args:
+            config (ConfigBase): The configuration with grid dimensions,
+                entry and exit coordinates.
+        """
         self.width = config.width
         self.height = config.height
         self._grid: list[list[Cell]] = [
@@ -28,9 +47,23 @@ class Grid:
         )
 
     def __getitem__(self, pos: int) -> list[Cell]:
+        """Get a row of cells by index.
+
+        Args:
+            pos (int): The row index.
+
+        Returns:
+            list[Cell]: The row of cells at the given index.
+        """
         return self._grid[pos]
 
     def __setitem__(self, pos: int, value: list[Cell]) -> None:
+        """Set a row of cells by index.
+
+        Args:
+            pos (int): The row index.
+            value (list[Cell]): The row of cells to set.
+        """
         self._grid[pos] = value
 
     def __set_wall(
@@ -38,7 +71,17 @@ class Grid:
             coordinate: Coordinate,
             wall: Direction,
             close: bool
-            ) -> None:
+    ) -> None:
+        """Set the wall state for a cell and its neighbor.
+
+        Updates the wall on the specified side of the cell and
+        the opposite wall on the neighboring cell.
+
+        Args:
+            coordinate (Coordinate): The coordinate of the cell.
+            wall (Direction): The direction of the wall to set.
+            close (bool): True to close the wall, False to open it.
+        """
         cell = self._grid[coordinate.y][coordinate.x]
         neighbor = self.get_neighbor(cell, wall)
         if neighbor is None:
@@ -57,12 +100,35 @@ class Grid:
             neighbor.walls.east = close
 
     def open_wall(self, coordinate: Coordinate, wall: Direction) -> None:
+        """Open a wall on the specified side of a cell.
+
+        Args:
+            coordinate (Coordinate): The coordinate of the cell.
+            wall (Direction): The direction of the wall to open.
+        """
         self.__set_wall(coordinate, wall, False)
 
     def close_wall(self, coordinate: Coordinate, wall: Direction) -> None:
+        """Close a wall on the specified side of a cell.
+
+        Args:
+            coordinate (Coordinate): The coordinate of the cell.
+            wall (Direction): The direction of the wall to close.
+        """
         self.__set_wall(coordinate, wall, True)
 
     def get_neighbor(self, cell: Cell, direction: Direction) -> Cell | None:
+        """Get the neighboring cell in the specified direction.
+
+        Returns None if the neighbor is out of bounds or is a wall.
+
+        Args:
+            cell (Cell): The source cell.
+            direction (Direction): The direction to look.
+
+        Returns:
+            Cell | None: The neighboring cell, or None if not available.
+        """
         result: Cell | None = None
         if direction == Direction.NORTH and cell.coordinate.y != 0:
             result = self._grid[cell.coordinate.y - 1][cell.coordinate.x]
@@ -81,6 +147,16 @@ class Grid:
         return result
 
     def get_direction(self, cell_1: Cell, cell_2: Cell) -> Direction | None:
+        """Get the direction from cell_1 to cell_2.
+
+        Args:
+            cell_1 (Cell): The starting cell.
+            cell_2 (Cell): The target cell.
+
+        Returns:
+            Direction | None: The direction from cell_1 to cell_2,
+                or None if they are not adjacent.
+        """
         if (
             cell_1.coordinate.y - 1 == cell_2.coordinate.y and
             cell_1.coordinate.x == cell_2.coordinate.x
@@ -105,7 +181,18 @@ class Grid:
             return None
 
     def available_direction(
-            self, source: Coordinate, include_occupied: bool = False) -> list[Direction]:
+            self, source: Coordinate, include_occupied: bool = False
+    ) -> list[Direction]:
+        """Get the list of available directions from a source cell.
+
+        Args:
+            source (Coordinate): The source coordinate.
+            include_occupied (bool): Whether to include occupied cells.
+                Defaults to False.
+
+        Returns:
+            list[Direction]: The list of available directions.
+        """
         usable: list[Direction] = []
         cell = self._grid[source.y][source.x]
         for direction in Direction:
@@ -118,6 +205,7 @@ class Grid:
         return usable
 
     def show(self) -> None:
+        """Display the grid visually in the terminal."""
         print("§" + "---§" * self.width)
         for row in self._grid:
             line = "|"
@@ -142,6 +230,7 @@ class Grid:
             print(line)
 
     def __wall_42(self) -> None:
+        """Draw a '42' wall pattern in the center of the grid if large enough."""
         fourtytwo_wall_height = 6
         fourtytwo_wall_width = 8
         if (
@@ -172,17 +261,33 @@ class Grid:
             self._grid[y + 4][x + 6].is_wall = True
 
     def __iter__(self) -> Iterator[Cell]:
+        """Iterate over all non-wall cells in the grid.
+
+        Yields:
+            Cell: The next non-wall cell.
+        """
         for row in self._grid:
             for cell in row:
                 if not cell.is_wall:
                     yield cell
 
     def clean(self) -> None:
+        """Clear the occupied flag on all cells in the grid."""
         for cell in self:
             cell.occupied = False
 
     @classmethod
-    def Build(cls, width: int, height: int) -> Grid:
+    def build(cls, width: int, height: int) -> "Grid":
+        """Create a Grid instance with the specified dimensions.
+
+        Args:
+            cls: The Grid class.
+            width (int): The width of the grid.
+            height (int): The height of the grid.
+
+        Returns:
+            Grid: A new Grid instance with the given dimensions.
+        """
         config = ConfigBase()
         config.width = width
         config.height = height
@@ -192,7 +297,7 @@ class Grid:
 
 
 if __name__ == "__main__":
-    grid = Grid.Build(4, 4)
+    grid: Grid = Grid.build(4, 4)
     grid.open_wall(Coordinate(0, 0), Direction.SOUTH)
     grid.open_wall(Coordinate(0, 1), Direction.SOUTH)
     grid.open_wall(Coordinate(0, 2), Direction.SOUTH)

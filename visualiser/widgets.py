@@ -1,12 +1,28 @@
+"""visualiser.widgets module.
+
+Provides reusable UI widget components for the visualiser.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Callable
 
 
-def fill_image(m: Any, img: Any, w: int, h: int,
-                color: tuple[int, int, int],
-                margin_x: int = 0, margin_y: int = 0) -> None:
+def fill_image(
+        m: Any, img: Any, w: int, h: int,
+        color: tuple[int, int, int],
+        margin_x: int = 0, margin_y: int = 0) -> None:
+    """Fill an image buffer with a solid color.
+
+    Args:
+        m (Any): The Mlx instance.
+        img (Any): The image buffer to fill.
+        w (int): The width of the image.
+        h (int): The height of the image.
+        color (tuple[int, int, int]): The RGB color to fill with.
+        margin_x (int): Horizontal margin to skip. Defaults to 0.
+        margin_y (int): Vertical margin to skip. Defaults to 0.
+    """
     data, bpp, size_line, endian = m.mlx_get_data_addr(img)
     r, g, b = color
     for y in range(margin_y, h - margin_y):
@@ -24,6 +40,20 @@ UNFOCUSED_COLOR = (80, 80, 80)
 
 @dataclass
 class Button:
+    """Represents a clickable button widget.
+
+    Attributes:
+        x (int): The x position of the button.
+        y (int): The y position of the button.
+        w (int): The width of the button.
+        h (int): The height of the button.
+        label (str): The text displayed on the button.
+        color_normal (tuple[int, int, int]): The color when not pressed.
+        color_pressed (tuple[int, int, int]): The color when pressed.
+        pressed (bool): Whether the button is currently pressed.
+        action (Callable[..., None] | None): The callback action.
+    """
+
     x: int
     y: int
     w: int
@@ -38,10 +68,26 @@ class Button:
     _last_pressed: bool | None = None
 
     def contains(self, mx: int, my: int) -> bool:
+        """Check if the given coordinates are inside the button bounds.
+
+        Args:
+            mx (int): The x coordinate to check.
+            my (int): The y coordinate to check.
+
+        Returns:
+            bool: True if the coordinates are inside the button bounds.
+        """
         return (
             self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
     def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+        """Draw the button onto the window.
+
+        Args:
+            m (Any): The Mlx instance.
+            mlx_ptr (Any): The mlx pointer.
+            win_ptr (Any): The window pointer.
+        """
         if self._img is None or self._last_pressed != self.pressed:
             self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
             color = self.color_pressed if self.pressed else self.color_normal
@@ -56,6 +102,19 @@ class Button:
 
 @dataclass
 class InputField:
+    """Represents an input field widget for text entry.
+
+    Attributes:
+        x (int): The x position of the input field.
+        y (int): The y position of the input field.
+        w (int): The width of the input field.
+        h (int): The height of the input field.
+        label (str): The label displayed for the field.
+        text (str): The current text content.
+        focused (bool): Whether the field is currently focused.
+        action (Callable[..., None] | None): The callback action.
+    """
+
     x: int
     y: int
     w: int
@@ -69,10 +128,26 @@ class InputField:
     _last_focused: bool | None = None
 
     def contains(self, mx: int, my: int) -> bool:
+        """Check if the given coordinates are inside the input field bounds.
+
+        Args:
+            mx (int): The x coordinate to check.
+            my (int): The y coordinate to check.
+
+        Returns:
+            bool: True if the coordinates are inside the input field bounds.
+        """
         return (
             self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
     def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+        """Draw the input field onto the window.
+
+        Args:
+            m (Any): The Mlx instance.
+            mlx_ptr (Any): The mlx pointer.
+            win_ptr (Any): The window pointer.
+        """
         if self._img is None or self._last_focused != self.focused:
             self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
             color = FOCUSED_COLOR if self.focused else UNFOCUSED_COLOR

@@ -1,9 +1,10 @@
-"""
-This module parses and saves the config data in class.
-Since the config dta xould contain anything it is considered as
+"""config.parser module.
+
+This module parses and saves the config data using Pydantic.
+Since the config data could contain anything it is considered as
 untrusted and for this we have decided to use Pydantic over
-@dataclass depsite the added dependency for the benefit of
-exentsive validation and less verbosity (aka to be more Pythonic)
+@dataclass despite the added dependency for the benefit of
+extensive validation and less verbosity (aka to be more Pythonic).
 """
 from pydantic import BaseModel, model_validator, ConfigDict, Field
 from typing import Any
@@ -11,41 +12,54 @@ from config.base import ConfigBase
 
 
 class Config(ConfigBase, BaseModel):
-    """
-    this class saves the parsed confgurate, usnig:
+    """Configuration model for the maze application.
+
+    This class saves the parsed configuration using:
         - Pydantic for post validation (model_validator)
-        - forzen for immutablilty
+        - frozen for immutability
         - ....
         - Field has not been used because it does not provide custom error
     """
+
     model_config = ConfigDict(frozen=True, extra='forbid')
 
     width: int = Field(le=100)  # number of pixels, no need for float
     height: int  # same as above
-    entry: tuple[int, int]  # cells are dicrete, no need for float
+    entry: tuple[int, int]  # cells are discrete, no need for float
     exit: tuple[int, int] = Field(alias='exit')  # same as above
     output_file: str
     perfect: bool
 
     def model_post_init(self, __context: Any) -> None:
-        """
-        This function performs post per field validation  requirments
-        to assure values in boundries.
+        """Perform post per-field validation to ensure values are in bounds.
+
+        Validates that width and height are positive, and that entry and
+        exit coordinates are non-negative.
+
+        Raises:
+            ValueError: If any validated constraint is violated.
         """
         if self.width <= 0:
             raise ValueError("WIDTH must be positive")
         if self.height <= 0:
             raise ValueError("HEIGHT must be positive")
         if self.entry[0] < 0 or self.entry[1] < 0:
-            raise ValueError("ENTRY point coordinates must pe positive")
+            raise ValueError("ENTRY point coordinates must be positive")
         if self.exit[0] < 0 or self.exit[1] < 0:
-            raise ValueError("EXIT point coordinates must pe positive")
+            raise ValueError("EXIT point coordinates must be positive")
 
     @model_validator(mode='after')
     def post_validate(self) -> Any:
-        """
-        This method performs cross-field validaiton, it runs automatically
-        after model_post_init and verfies that full model is coherent.
+        """Perform cross-field validation to ensure full model coherence.
+
+        Validates that entry and exit points are within the grid dimensions
+        and that entry and exit are not the same point.
+
+        Returns:
+            Any: The validated model instance.
+
+        Raises:
+            ValueError: If cross-field validation fails.
         """
         if self.entry[0] >= self.width or self.exit[0] >= self.width:
             raise ValueError("entry and exit point coordinates must in " +
@@ -59,9 +73,21 @@ class Config(ConfigBase, BaseModel):
 
 
 def load_config(path: str) -> Config:
-    """
-    This funciton loads the config from the config file and
-    parses the argument in a dict it returns an instance of Config
+    """Load and parse the configuration from a config file.
+
+    Reads the config file line by line, parses each KEY=value pair,
+    validates mandatory keys are present, and returns a Config instance.
+
+    Args:
+        path (str): Path to the configuration file.
+
+    Returns:
+        Config: The parsed configuration object.
+
+    Raises:
+        KeyError: If required keys are missing from the config file.
+        TypeError: If entry or exit coordinates have wrong format.
+        ValueError: If coordinate values are empty or invalid.
     """
     raw: dict[str, Any] = {}
     try:

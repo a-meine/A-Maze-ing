@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+"""Entry point for the a_maze_ing application.
+
+Loads the configuration file and starts the visualiser window.
+"""
 
 import sys
 from config.parser import load_config
-# from visualiser.mlx_visualiser import Window
 from visualiser.mlx_visualiser import Window
 
 if __name__ == "__main__":
@@ -15,7 +18,6 @@ if __name__ == "__main__":
     try:
         config = load_config(config_file)
         print("parsed config parameters: ")
-        # print(maze_config)
     except (KeyError, ValueError, TypeError) as e:
         print(e)
         exit(1)
