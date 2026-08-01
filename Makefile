@@ -2,7 +2,7 @@
 PREFIX := $(HOME)/local
 SRC := $(PREFIX)/src
 KEYSYMS_VER := 0.4.1
-MLX = mlx-2.2-py3-none-any.whl
+MLX = mlx-2.4-py3-none-any.whl
 DEPENDECY = $(PREFIX)/include/xcb/xcb_keysyms.h
 
 all: $(MLX)
@@ -53,17 +53,19 @@ $(DEPENDECY):
 
 $(MLX): $(DEPENDECY)
 	rm -rf mlx_CLXV
-	it clone git@github.com:42school/mlx_CLXV.git
+	git clone git@github.com:42school/mlx_CLXV.git
 	cd mlx_CLXV && \
 	LOCAL_PREFIX="$(PREFIX)" && \
 	FILE="Makefile" && \
 	grep -q "^LOCAL_PREFIX=" "$$FILE" || sed -i "/^NAME=/a LOCAL_PREFIX=$$LOCAL_PREFIX" "$$FILE"; \
 	sed -i 's|^INCLUDES=.*|INCLUDES=-I./src -I$$(LOCAL_PREFIX)/include|' "$$FILE"; \
-	sed -i 's|^LDFLAGS.*|LDFLAGS+= -L$$(LOCAL_PREFIX)/lib -Wl,-rpath,$$(LOCAL_PREFIX)/lib|' "$$FILE"; \
+	sed -i 's|^override CFLAGS.*|& -L$$(LOCAL_PREFIX)/lib -Wl,-rpath,$$(LOCAL_PREFIX)/lib|' "$$FILE"; \
 	sed -i 's|^all: config $$(NAME) pypkg|all: $$(NAME) pypkg|' "$$FILE"; \
 	sed -i '/^config: configure.sh/,+1 s/^/# /' "$$FILE"; \
 	sed -i '1 s|^#!/bin/sh|#!/usr/bin/env bash|' pybuild.sh
 	sed -E -i 's/^( *mlx *= *\[[^]]*)(])/ \1, "py.typed"\2/' mlx_CLXV/python/pyproject.toml
 	touch mlx_CLXV/python/src/mlx/py.typed
 	cd mlx_CLXV && make
+	cp mlx_CLXV/mlx-*.whl "$(MLX)"
+	uv lock
 	rm -rf mlx_CLXV
