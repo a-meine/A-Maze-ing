@@ -63,8 +63,8 @@ class Window:
         Args:
             config (Config): The application configuration.
         """
-        self.win_width = 1800
-        self.win_height = 1200
+        self.win_width = 1920
+        self.win_height = 1080
         self.config = config
         print(config)
 
