@@ -96,6 +96,6 @@ class Wilson(GeneratorBase):
 
 
 if __name__ == "__main__":
-    wilson = Wilson(Grid.Build(50, 50))
+    wilson = Wilson(Grid.build(50, 50))
     wilson.generate_maze()
     wilson.grid.show()

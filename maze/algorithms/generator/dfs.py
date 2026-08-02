@@ -62,6 +62,6 @@ class DFS(GeneratorBase):
 
 
 if __name__ == "__main__":
-    dfs = DFS(Grid.Build(50, 50))
+    dfs = DFS(Grid.build(50, 50))
     dfs.generate_maze()
     dfs.grid.show()

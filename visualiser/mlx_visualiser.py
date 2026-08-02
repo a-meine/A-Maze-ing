@@ -15,6 +15,7 @@ from config.parser import Config, load_config
 from maze.encoding import write_output
 from visualiser.widgets import Button, InputField, fill_image
 from visualiser.layout import Layout
+from typing import Callable
 
 KEY_ESC = 65307
 KEY_BACKSPACE = 65288
@@ -77,39 +78,57 @@ class Window:
         self.render_delay = 0.001
         self.entry = config.entry
         self.exit = config.exit
-        self.algorithm = "prim"
+        self.algorithm = "dfs"
         self.solution_path: list[Cell] = []
-        self.show_path = True
+        self.show_path: bool | Callable = True
 
-    def _build_grid(self) -> Any:
-        """Build a maze generator based on the current algorithm setting.
+    # def _build_grid(self) -> Any:
+    #     """Build a maze generator based on the current algorithm setting.
 
-        Returns:
-            Any: The maze generator instance (DFS or Prim).
-        """
-        grid = Grid(self.config)
-        if self.algorithm == "dfs":
-            return DFS(grid)
-        return Prim(grid)
+    #     Returns:
+    #         Any: The maze generator instance (DFS or Prim).
+    #     """
+    #     grid = Grid(self.config)
+    #     if self.algorithm == "dfs":
+    #         return DFS(grid)
+    #     return Prim(grid)
 
-    def config_images(self) -> None:
+    # def config_images(self) -> None:
         """Configure all image resources for rendering.
 
         Computes the layout, builds the grid, and sets
         up the render callback.
         """
-        self.layout = Layout.compute(
-            self.fields, self.config, self.win_width, self.win_height
-        )
-        self.grid = self._build_grid()
+        # self.layout = Layout.compute(
+        #     self.fields, self.config, self.win_width, self.win_height
+        # )
+        # self.grid = self._build_grid()
+        # self.grid.event = self.render
+
+    def config_images(self) -> None:
+        self.layout = Layout.compute(self.fields, self.config,
+                                    self.win_width, self.win_height)
+        cfg = self.config.model_copy(update={
+            "width": self.layout.grid_width,
+            "height": self.layout.grid_height,
+            "entry": self.layout.entry,
+            "exit": self.layout.exit,
+        })
+        self.grid = self._build_grid(cfg)
         self.grid.event = self.render
 
+    def _build_grid(self, config: Config) -> Any:
+        grid = Grid(config)
+        if self.algorithm == "dfs":
+            return DFS(grid)
+        return Prim(grid)
     def apply_settings(self) -> None:
         """Apply current UI settings and rebuild the display.
 
         Reconfigures images, reinitialises resources,
         redraws the menu, and re-renders the grid.
         """
+        self.solution_path = []
         self.config_images()
         self.initialise_images()
         self.redraw_menu()
@@ -288,6 +307,8 @@ class Window:
                     self.mlx_ptr, self.win_ptr,
                     self.path_cell_img, px, py)
                 self._render_entry_exit(cell, px, py)
+            self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_FLUSH,
+                        self.win_ptr)
 
     def _set_algorithm(self, algo: str) -> None:
         """Set the maze generation algorithm and update button colours.
@@ -305,30 +326,33 @@ class Window:
     def menu(self) -> None:
         """Set up the menu buttons and input fields."""
         algo_buttons = [
-            Button(205, 490, 50, 30, "DFS",
+            Button(200, 520, 100, 30, "DFS",
                    INACTIVE_GRAY, INACTIVE_GRAY,
                    action=lambda: self._set_algorithm("dfs")),
-            Button(260, 490, 50, 30, "Prim",
+            Button(310, 520, 100, 30, "Prim",
                    GREEN, RED,
                    action=lambda: self._set_algorithm("prim")),
-        ]
+            Button(420, 520, 100, 30, "Wil",
+                   GREEN, RED,
+                   action=lambda: self._set_algorithm("wilson"))
+            ]
         self.algo_buttons = algo_buttons
         self.buttons = [
-            Button(200, 150, 200, 40, "Apply Settings",
+            Button(200, 150, 200, 40, "Apply",
                    GREEN, RED, action=self.apply_settings),
             Button(200, 210, 200, 40, "Re-Generate",
                    GREEN, RED, action=self.regen),
             Button(200, 270, 200, 40, "Hide Path",
                    GREEN, RED, action=self.toggle_path),
-            Button(250, 560, 150, 30, "exit",
+            Button(250, 950, 150, 30, "exit",
                    GREEN, RED,
                    action=lambda: self.close(None)),
             *algo_buttons,
         ]
         self.fields = [
-            InputField(200, 300, 70, 30, "width",
+            InputField(200, 350, 70, 30, "width",
                        str(self.config.width)),
-            InputField(450, 300, 70, 30, "height",
+            InputField(450, 350, 70, 30, "height",
                        str(self.config.height)),
             InputField(200, 400, 20, 20, "",
                        str(self.config.entry[0])),
@@ -457,13 +481,22 @@ class Window:
             self.redraw_fields()
 
     def toggle_path(self) -> None:
-        """Toggle the visibility of the solution path."""
         self.show_path = not self.show_path
         for btn in self.buttons:
             if btn.action == self.toggle_path:
                 btn.label = "Hide Path" if self.show_path else "Show Path"
         self.redraw_buttons()
-        self.render_grid()
+        l: Layout = self.layout
+        for cell in self.solution_path:
+            rx = 2 * cell.coordinate.x + 1
+            ry = 2 * cell.coordinate.y + 1
+            px = l.offset_x + rx * l.tile_width
+            py = l.offset_y + ry * l.tile_height
+            img = self.path_cell_img if self.show_path else self.cell_img_ptr
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, img, px, py)
+            self._render_entry_exit(cell, px, py)
+        self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
 
     def regen(self) -> None:
         """Regenerate the maze and update the display."""
@@ -471,6 +504,8 @@ class Window:
         self.grid.generate_maze()
         self._solve_path()
         write_output(self.grid.grid, self.config, self.solution_path)
+        # self.redraw_menu()       # repaint backgrounds + menu last
+        # self.render_grid()       # rebuild maze tiles on top
         self._render_path()
 
     def close(self, dummy: Any) -> None:

@@ -96,11 +96,14 @@ class Layout:
         grid_px_w = rend_tiles_x * tile_width
         grid_px_h = rend_tiles_y * tile_height
 
-        offset_x = (maze_offset_x + tile_width
-                    + (maze_w - tile_width * 2 - grid_px_w) // 2
-                    + relative_x_offset)
-        offset_y = (maze_offset_y + tile_height
-                    + (maze_h - tile_height * 2 - grid_px_h) // 2)
+        offset_x = maze_offset_x + relative_x_offset + (maze_w - grid_px_w) // 2
+        offset_y = maze_offset_y + (maze_h - grid_px_h) // 2
+
+        # offset_x = (maze_offset_x + tile_width
+        #             + (maze_w - tile_width * 2 - grid_px_w) // 2
+        #             + relative_x_offset)
+        # offset_y = (maze_offset_y + tile_height
+        #             + (maze_h - tile_height * 2 - grid_px_h) // 2)
 
         menu_w = int(win_width * 0.3)
         menu_h = maze_h
