@@ -1,9 +1,6 @@
-.PHONY: all deps mlx clean fclean re install run debug lint lint-strict
-PREFIX := $(HOME)/local
-SRC := $(PREFIX)/src
-KEYSYMS_VER := 0.4.1
+.PHONY: all deps clean fclean re install run debug lint lint-strict
 MLX = mlx-2.4-py3-none-any.whl
-DEPENDECY = $(PREFIX)/include/xcb/xcb_keysyms.h
+
 
 all: $(MLX)
 	uv run a_maze_ing.py config.txt
@@ -24,12 +21,10 @@ clean:
 	rm -f output_maze.txt
 
 fclean: clean
-	rm -rf "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER)"
-	rm -f "$(PREFIX)/src/xcb-util-keysyms-$(KEYSYMS_VER).tar.xz"
 	rm $(MLX)
 
 lint:
-	uv run flake8 .
+	uv run flake8 --extend-select=N .
 	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
@@ -38,34 +33,12 @@ lint-strict:
 
 re: clean all
 
-$(DEPENDECY):
-	@if [ ! -f "$(PREFIX)/include/xcb/xcb_keysyms.h" ]; then \
-		mkdir -p "$(SRC)"; \
-		cd "$(SRC)" && \
-		wget -nc https://xorg.freedesktop.org/archive/individual/lib/xcb-util-keysyms-$(KEYSYMS_VER).tar.xz && \
-		rm -rf xcb-util-keysyms-$(KEYSYMS_VER) && \
-		tar -xf xcb-util-keysyms-$(KEYSYMS_VER).tar.xz && \
-		cd xcb-util-keysyms-$(KEYSYMS_VER) && \
-		./configure --prefix="$(PREFIX)" && \
-		make -j && \
-		make install; \
-	fi
-
-$(MLX): $(DEPENDECY)
+$(MLX):
 	rm -rf mlx_CLXV
 	git clone git@github.com:42school/mlx_CLXV.git
-	cd mlx_CLXV && \
-	LOCAL_PREFIX="$(PREFIX)" && \
-	FILE="Makefile" && \
-	grep -q "^LOCAL_PREFIX=" "$$FILE" || sed -i "/^NAME=/a LOCAL_PREFIX=$$LOCAL_PREFIX" "$$FILE"; \
-	sed -i 's|^INCLUDES=.*|INCLUDES=-I./src -I$$(LOCAL_PREFIX)/include|' "$$FILE"; \
-	sed -i 's|^override CFLAGS.*|& -L$$(LOCAL_PREFIX)/lib -Wl,-rpath,$$(LOCAL_PREFIX)/lib|' "$$FILE"; \
-	sed -i 's|^all: config $$(NAME) pypkg|all: $$(NAME) pypkg|' "$$FILE"; \
-	sed -i '/^config: configure.sh/,+1 s/^/# /' "$$FILE"; \
-	sed -i '1 s|^#!/bin/sh|#!/usr/bin/env bash|' pybuild.sh
-	sed -E -i 's/^( *mlx *= *\[[^]]*)(])/ \1, "py.typed"\2/' mlx_CLXV/python/pyproject.toml
-	touch mlx_CLXV/python/src/mlx/py.typed
 	cd mlx_CLXV && make
-	cp mlx_CLXV/mlx-*.whl "$(MLX)"
-	uv lock
+	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
+	uv remove mlx
+	uv add $(MLX)
+	uv sync
