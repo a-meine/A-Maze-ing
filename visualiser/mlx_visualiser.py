@@ -80,7 +80,7 @@ class Window:
         self.exit = config.exit
         self.algorithm = "dfs"
         self.solution_path: list[Cell] = []
-        self.show_path: bool | Callable = True
+        self.show_path: bool | Callable[..., None] = True
 
     # def _build_grid(self) -> Any:
     #     """Build a maze generator based on the current algorithm setting.
@@ -326,41 +326,41 @@ class Window:
     def menu(self) -> None:
         """Set up the menu buttons and input fields."""
         algo_buttons = [
-            Button(200, 520, 100, 30, "DFS",
+            Button(50, 520, 100, 30, "DFS",
                    INACTIVE_GRAY, INACTIVE_GRAY,
                    action=lambda: self._set_algorithm("dfs")),
-            Button(310, 520, 100, 30, "Prim",
+            Button(160, 520, 100, 30, "Prim",
                    GREEN, RED,
                    action=lambda: self._set_algorithm("prim")),
-            Button(420, 520, 100, 30, "Wil",
+            Button(370, 520, 100, 30, "Wil",
                    GREEN, RED,
                    action=lambda: self._set_algorithm("wilson"))
             ]
         self.algo_buttons = algo_buttons
         self.buttons = [
-            Button(200, 150, 200, 40, "Apply",
+            Button(100, 150, 200, 40, "Apply",
                    GREEN, RED, action=self.apply_settings),
-            Button(200, 210, 200, 40, "Re-Generate",
+            Button(100, 210, 200, 40, "Re-Generate",
                    GREEN, RED, action=self.regen),
-            Button(200, 270, 200, 40, "Hide Path",
+            Button(100, 270, 200, 40, "Hide Path",
                    GREEN, RED, action=self.toggle_path),
-            Button(250, 950, 150, 30, "exit",
+            Button(100, 950, 150, 30, "exit",
                    GREEN, RED,
                    action=lambda: self.close(None)),
             *algo_buttons,
         ]
         self.fields = [
-            InputField(200, 350, 70, 30, "width",
+            InputField(50, 350, 70, 30, "width",
                        str(self.config.width)),
-            InputField(450, 350, 70, 30, "height",
+            InputField(200, 350, 70, 30, "height",
                        str(self.config.height)),
-            InputField(200, 400, 20, 20, "",
+            InputField(50, 400, 20, 20, "",
                        str(self.config.entry[0])),
-            InputField(223, 400, 20, 20, "",
+            InputField(73, 400, 20, 20, "",
                        str(self.config.entry[1])),
-            InputField(200, 450, 20, 20, "",
+            InputField(50, 450, 20, 20, "",
                        str(self.config.exit[0])),
-            InputField(223, 450, 20, 20, "",
+            InputField(73, 450, 20, 20, "",
                        str(self.config.exit[1])),
         ]
 
