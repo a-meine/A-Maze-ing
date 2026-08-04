@@ -7,10 +7,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from MlxColor import MlxColor
+
 
 def fill_image(
         m: Any, img: Any, w: int, h: int,
-        color: tuple[int, int, int],
+        color: tuple[int, int, int] | int,
         margin_x: int = 0, margin_y: int = 0) -> None:
     """Fill an image buffer with a solid color.
 
@@ -19,10 +21,13 @@ def fill_image(
         img (Any): The image buffer to fill.
         w (int): The width of the image.
         h (int): The height of the image.
-        color (tuple[int, int, int]): The RGB color to fill with.
+        color (tuple[int, int, int] | int): The RGB color as a tuple
+            or an MlxColor 0xFFRRGGBB integer.
         margin_x (int): Horizontal margin to skip. Defaults to 0.
         margin_y (int): Vertical margin to skip. Defaults to 0.
     """
+    if isinstance(color, int):
+        color = MlxColor.to_rgb(color)
     data, bpp, size_line, endian = m.mlx_get_data_addr(img)
     r, g, b = color
     for y in range(margin_y, h - margin_y):
@@ -34,8 +39,8 @@ def fill_image(
             data[index + 3] = 255
 
 
-FOCUSED_COLOR = (80, 80, 220)
-UNFOCUSED_COLOR = (80, 80, 80)
+FOCUSED_COLOR = MlxColor.BLUE
+UNFOCUSED_COLOR = MlxColor.OVERLAY_2
 
 
 @dataclass
@@ -97,7 +102,8 @@ class Button:
         m.mlx_put_image_to_window(mlx_ptr, win_ptr,
                                   self._img, self.x, self.y)
         m.mlx_string_put(mlx_ptr, win_ptr,
-                         self.x + 5, self.y + 8, 0xFFFFFF, self.label)
+                         self.x + 5, self.y + 8,
+                         MlxColor.to_hex(MlxColor.WHITE), self.label)
 
 
 @dataclass
@@ -157,6 +163,8 @@ class InputField:
         m.mlx_put_image_to_window(mlx_ptr, win_ptr,
                                   self._img, self.x, self.y)
         m.mlx_string_put(mlx_ptr, win_ptr,
-                         self.x + self.w, self.y + 5, 0xFFFFFF, self.label)
+                         self.x + self.w, self.y + 5,
+                         MlxColor.to_hex(MlxColor.WHITE), self.label)
         m.mlx_string_put(mlx_ptr, win_ptr,
-                         self.x, self.y + 2, 0xFFFFFF, self.text)
+                         self.x, self.y + 2,
+                         MlxColor.to_hex(MlxColor.WHITE), self.text)

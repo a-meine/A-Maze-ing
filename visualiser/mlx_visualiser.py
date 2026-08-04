@@ -4,6 +4,7 @@ Provides the Window class for visualising the maze
 using the mlx library.
 """
 from mlx import Mlx
+from MlxColor import MlxColor
 from typing import Any
 # import time
 from maze.cell import Cell
@@ -22,15 +23,15 @@ KEY_BACKSPACE = 65288
 KEY_0 = 48
 KEY_9 = 57
 
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-MAGENTA = (255, 0, 255)
-CYAN = (0, 255, 255)
-GRAY = (50, 50, 50)
-MED_GRAY = (128, 128, 128)
-INACTIVE_GRAY = (100, 100, 100)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
+WHITE = MlxColor.WHITE
+GREEN = MlxColor.GREEN
+MAGENTA = MlxColor.PINK
+CYAN = MlxColor.SKY
+GRAY = MlxColor.OVERLAY_2
+MED_GRAY = MlxColor.OVERLAY_0
+INACTIVE_GRAY = MlxColor.OVERLAY_1
+RED = MlxColor.RED
+YELLOW = MlxColor.YELLOW
 
 
 class Window:
@@ -81,29 +82,6 @@ class Window:
         self.algorithm = "dfs"
         self.solution_path: list[Cell] = []
         self.show_path: bool | Callable[..., None] = True
-
-    # def _build_grid(self) -> Any:
-    #     """Build a maze generator based on the current algorithm setting.
-
-    #     Returns:
-    #         Any: The maze generator instance (DFS or Prim).
-    #     """
-    #     grid = Grid(self.config)
-    #     if self.algorithm == "dfs":
-    #         return DFS(grid)
-    #     return Prim(grid)
-
-    # def config_images(self) -> None:
-        """Configure all image resources for rendering.
-
-        Computes the layout, builds the grid, and sets
-        up the render callback.
-        """
-        # self.layout = Layout.compute(
-        #     self.fields, self.config, self.win_width, self.win_height
-        # )
-        # self.grid = self._build_grid()
-        # self.grid.event = self.render
 
     def config_images(self) -> None:
         self.layout = Layout.compute(self.fields, self.config,
@@ -294,19 +272,45 @@ class Window:
                         self.win_ptr)
         self._render_path()
 
+    def _blit_path(self, cell_img: Any, bridge_img: Any,
+                   draw_markers: bool = True) -> None:
+        """Draw the solution path cells and the passages between them.
+
+        Path cells sit at odd render columns/rows (2x+1). The passage
+        tiles connecting consecutive path cells are drawn at the
+        intermediate render position so the route appears continuous.
+
+        Args:
+            cell_img (Any): Image used for each path cell.
+            bridge_img (Any): Image used for the passage tiles between
+                consecutive path cells.
+            draw_markers (bool): Whether to redraw the entry/exit
+                markers on top of each cell. Defaults to True.
+        """
+        l: Layout = self.layout
+        prev = None
+        for cell in self.solution_path:
+            rx = 2 * cell.coordinate.x + 1
+            ry = 2 * cell.coordinate.y + 1
+            px = l.offset_x + rx * l.tile_width
+            py = l.offset_y + ry * l.tile_height
+            self.m.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, cell_img, px, py)
+            if draw_markers:
+                self._render_entry_exit(cell, px, py)
+            if prev is not None:
+                bx = (px_prev + px) // 2
+                by = (py_prev + py) // 2
+                self.m.mlx_put_image_to_window(
+                    self.mlx_ptr, self.win_ptr, bridge_img, bx, by)
+            prev = cell
+            px_prev = px
+            py_prev = py
+
     def _render_path(self) -> None:
         """Render the solution path onto the window."""
-        l: Layout = self.layout
         if self.show_path:
-            for cell in self.solution_path:
-                rx = 2 * cell.coordinate.x + 1
-                ry = 2 * cell.coordinate.y + 1
-                px = l.offset_x + rx * l.tile_width
-                py = l.offset_y + ry * l.tile_height
-                self.m.mlx_put_image_to_window(
-                    self.mlx_ptr, self.win_ptr,
-                    self.path_cell_img, px, py)
-                self._render_entry_exit(cell, px, py)
+            self._blit_path(self.path_cell_img, self.path_cell_img)
             self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_FLUSH,
                         self.win_ptr)
 
@@ -377,7 +381,7 @@ class Window:
             l.maze_offset_x + l.relative_x_offset, l.maze_offset_y)
 
         self.m.mlx_string_put(self.mlx_ptr, self.win_ptr,
-                              200, 480, 0xFFFFFF, "Algorithm:")
+                              200, 480, MlxColor.to_hex(MlxColor.WHITE), "Algorithm:")
         self.redraw_buttons()
         self.redraw_fields()
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED,
@@ -486,16 +490,10 @@ class Window:
             if btn.action == self.toggle_path:
                 btn.label = "Hide Path" if self.show_path else "Show Path"
         self.redraw_buttons()
-        l: Layout = self.layout
-        for cell in self.solution_path:
-            rx = 2 * cell.coordinate.x + 1
-            ry = 2 * cell.coordinate.y + 1
-            px = l.offset_x + rx * l.tile_width
-            py = l.offset_y + ry * l.tile_height
-            img = self.path_cell_img if self.show_path else self.cell_img_ptr
-            self.m.mlx_put_image_to_window(
-                self.mlx_ptr, self.win_ptr, img, px, py)
-            self._render_entry_exit(cell, px, py)
+        if self.show_path:
+            self._blit_path(self.path_cell_img, self.path_cell_img)
+        else:
+            self._blit_path(self.cell_img_ptr, self.cell_img_ptr)
         self.m.mlx_sync(self.mlx_ptr, self.m.SYNC_WIN_COMPLETED, self.win_ptr)
 
     def regen(self) -> None:
