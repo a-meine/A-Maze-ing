@@ -84,10 +84,11 @@ class Layout:
 
         relative_x_offset = int(win_width * 0.28)
 
-        maze_offset_x = int(win_width * 0.1)
-        maze_offset_y = int(win_height * 0.1)
+        maze_offset_x = 9
+        maze_offset_y = int(win_height * 0.005)
 
-        maze_w = int(win_width * 0.8) - 2 * maze_offset_x
+        # maze_w = int(win_width * 0.8) - 2 * maze_offset_x
+        maze_w = win_width - 2 * maze_offset_x - relative_x_offset
         maze_h = win_height - 2 * maze_offset_y
 
         tile_width = maze_w // rend_tiles_x
@@ -105,7 +106,8 @@ class Layout:
         # offset_y = (maze_offset_y + tile_height
         #             + (maze_h - tile_height * 2 - grid_px_h) // 2)
 
-        menu_w = int(win_width * 0.3)
+        menu_w = int(win_width * 0.28)
+        menu_w = win_width - maze_w - 40
         menu_h = maze_h
         menu_x = int(maze_offset_x / 2)
         menu_y = maze_offset_y
