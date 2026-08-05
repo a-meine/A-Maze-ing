@@ -102,7 +102,7 @@ class App:
             self.ctx.win_ptr, self.input_handler.start_mouse_hook, None)
         self.ctx.m.mlx_loop(self.ctx.mlx_ptr)
 
-if "__name__" == "__main__":
-    App().run()
+
+if __name__ == "__main__":
     config = load_config(sys.argv[1])
     App(config).run()

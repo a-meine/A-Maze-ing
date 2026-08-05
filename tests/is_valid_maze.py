@@ -11,9 +11,9 @@ from maze.grid import Grid
 T = TypeVar("T", bound=GeneratorBase)
 
 class TestGenerator(unittest.TestCase):
-    def is_maze_has_open_area(self, generatorType: type[T]):
+    def is_maze_has_open_area(self, generator_type: type[T]) -> None:
         for _ in range(1, 30):
-            generator = generatorType(Grid.Build(50, 50))
+            generator = generator_type(Grid.build(50, 50))
             generator.generate_maze()
             for x in range(0, generator.grid.width - 3):
                 for y in range(0, generator.grid.height - 3):
@@ -39,17 +39,17 @@ class TestGenerator(unittest.TestCase):
 
 
 class TestDFS(TestGenerator):
-    def test_if_generate_valid_maze(self):
+    def test_if_generate_valid_maze(self) -> None:
         self.is_maze_has_open_area(DFS)
 
 
 class TestWilson(TestGenerator):
-    def test_if_generate_valid_maze(self):
+    def test_if_generate_valid_maze(self) -> None:
         self.is_maze_has_open_area(Wilson)
 
 
 class TestPrim(TestGenerator):
-    def test_if_generate_valid_maze(self):
+    def test_if_generate_valid_maze(self) -> None:
         self.is_maze_has_open_area(Prim)
 
 
