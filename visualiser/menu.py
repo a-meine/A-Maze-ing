@@ -7,7 +7,7 @@ depends on the surrounding application.
 """
 from typing import Any, Callable
 
-from MlxColor import MlxColor
+from visualiser.MlxColor import MlxColor
 from visualiser.widgets import Button, InputField
 from visualiser.constants import (
     GREEN,

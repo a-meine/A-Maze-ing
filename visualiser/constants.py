@@ -3,7 +3,7 @@
 Shared constants for the refactored visualiser: key codes,
 window events and the MlxColor palette aliases used across modules.
 """
-from MlxColor import MlxColor
+from visualiser.MlxColor import MlxColor
 
 KEY_ESC = 65307
 KEY_BACKSPACE = 65288

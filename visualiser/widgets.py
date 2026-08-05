@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from MlxColor import MlxColor
+from visualiser.MlxColor import MlxColor
 
 
 def fill_image(

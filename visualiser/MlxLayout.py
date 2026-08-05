@@ -5,7 +5,7 @@ pixel access, used as a render target for UI widgets and frames.
 """
 from typing import Any
 
-from MlxColor import MlxColor
+from visualiser.MlxColor import MlxColor
 from visualiser.TextBlock import TextBlock
 
 
