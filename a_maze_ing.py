@@ -6,7 +6,9 @@ Loads the configuration file and starts the visualiser window.
 
 import sys
 from config.parser import load_config
-from visualiser.mlx_visualiser import Window
+# from visualiser.mlx_visualiser import Window
+from visualiser.app import App
+
 
 if __name__ == "__main__":
     if len(sys.argv[1:]) != 1:
@@ -21,4 +23,4 @@ if __name__ == "__main__":
     except (KeyError, ValueError, TypeError) as e:
         print(e)
         exit(1)
-    Window(config).run()
+    App(config).run()

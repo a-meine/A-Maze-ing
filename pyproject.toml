@@ -11,7 +11,12 @@ dependencies = [
 dev = [
     "debugpy>=1.8.21",
     "mypy>=2.1.0",
+    "pytest>=9.1.1",
 ]
 
 [tool.uv.sources]
 mlx = { path = "mlx-2.4-py3-none-any.whl" }
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests/visualiser"]

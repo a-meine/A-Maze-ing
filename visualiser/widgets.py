@@ -64,8 +64,8 @@ class Button:
     w: int
     h: int
     label: str
-    color_normal: tuple[int, int, int]
-    color_pressed: tuple[int, int, int]
+    color_normal: tuple[int, int, int] | int
+    color_pressed: tuple[int, int, int] | int
     pressed: bool = False
     action: Callable[..., None] | None = None
 

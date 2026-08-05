@@ -61,7 +61,8 @@ class BFS():
             return not cell.walls.south
         if direction == Direction.WEST:
             return not cell.walls.west
-        return False
+        else:
+            return False
 
     def solve(self) -> list[Cell]:
         """Solve the maze using Breadth-First Search.
