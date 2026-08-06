@@ -29,6 +29,7 @@ class Config(ConfigBase, BaseModel):
     exit: tuple[int, int] = Field(alias='exit')  # same as above
     output_file: str
     perfect: bool
+    seed: int | None = None
 
     def model_post_init(self, __context: Any) -> None:
         """Perform post per-field validation to ensure values are in bounds.

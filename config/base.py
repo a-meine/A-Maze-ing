@@ -14,3 +14,4 @@ class ConfigBase(ABC):
     entry: tuple[int, int]
     exit: tuple[int, int]
     perfect: bool
+    seed: int | None
