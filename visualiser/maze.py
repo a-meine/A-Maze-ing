@@ -4,6 +4,7 @@ Provides the MazeEngine: maze model construction, grid building and
 solution path computation. It is composed into the App class.
 """
 from typing import Any, Callable
+import random
 
 from maze.cell import Cell
 from maze.grid import Grid
@@ -49,6 +50,8 @@ class MazeEngine:
         ctx.grid.event = self._render_cb
 
     def _build_grid(self, config: Config) -> Any:
+        if config.seed is not None:
+            random.seed(config.seed)
         grid = Grid(config)
         if self.ctx.algorithm == "dfs":
             return DFS(grid)

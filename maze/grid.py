@@ -34,6 +34,7 @@ class Grid:
             [Cell(Coordinate(x, y)) for x in range(self.width)]
             for y in range(self.height)
         ]
+        self._42_cells: list[Cell] = []
         self.__wall_42()
         (x, y) = config.entry
         self.start = self._grid[y][x]
@@ -229,6 +230,12 @@ class Grid:
                     line += "   §"
             print(line)
 
+    def __mark_42_wall(self, x: int, y: int) -> None:
+        """Mark the cell at (x, y) as part of the '42' wall pattern."""
+        cell = self._grid[y][x]
+        cell.is_wall = True
+        self._42_cells.append(cell)
+
     def __wall_42(self) -> None:
         """Draw a '42' wall pattern in the center of the grid if large enough."""
         fourtytwo_wall_height = 6
@@ -240,25 +247,29 @@ class Grid:
             x = (self.width // 2) - ((fourtytwo_wall_width - 1) // 2)
             y = (self.height // 2) - ((fourtytwo_wall_height - 1) // 2)
             # letter 4
-            self._grid[y][x].is_wall = True
-            self._grid[y + 1][x].is_wall = True
-            self._grid[y + 2][x].is_wall = True
-            self._grid[y + 2][x + 1].is_wall = True
-            self._grid[y + 2][x + 2].is_wall = True
-            self._grid[y + 3][x + 2].is_wall = True
-            self._grid[y + 4][x + 2].is_wall = True
+            self.__mark_42_wall(x, y)
+            self.__mark_42_wall(x, y + 1)
+            self.__mark_42_wall(x, y + 2)
+            self.__mark_42_wall(x + 1, y + 2)
+            self.__mark_42_wall(x + 2, y + 2)
+            self.__mark_42_wall(x + 2, y + 3)
+            self.__mark_42_wall(x + 2, y + 4)
             # letter 2
-            self._grid[y][x + 4].is_wall = True
-            self._grid[y][x + 5].is_wall = True
-            self._grid[y][x + 6].is_wall = True
-            self._grid[y + 1][x + 6].is_wall = True
-            self._grid[y + 2][x + 6].is_wall = True
-            self._grid[y + 2][x + 5].is_wall = True
-            self._grid[y + 2][x + 4].is_wall = True
-            self._grid[y + 3][x + 4].is_wall = True
-            self._grid[y + 4][x + 4].is_wall = True
-            self._grid[y + 4][x + 5].is_wall = True
-            self._grid[y + 4][x + 6].is_wall = True
+            self.__mark_42_wall(x + 4, y)
+            self.__mark_42_wall(x + 5, y)
+            self.__mark_42_wall(x + 6, y)
+            self.__mark_42_wall(x + 6, y + 1)
+            self.__mark_42_wall(x + 6, y + 2)
+            self.__mark_42_wall(x + 5, y + 2)
+            self.__mark_42_wall(x + 4, y + 2)
+            self.__mark_42_wall(x + 4, y + 3)
+            self.__mark_42_wall(x + 4, y + 4)
+            self.__mark_42_wall(x + 5, y + 4)
+            self.__mark_42_wall(x + 6, y + 4)
+
+    def pattern_cells(self) -> list[Cell]:
+        """Return the cells that make up the '42' wall pattern."""
+        return self._42_cells
 
     def __iter__(self) -> Iterator[Cell]:
         """Iterate over all non-wall cells in the grid.

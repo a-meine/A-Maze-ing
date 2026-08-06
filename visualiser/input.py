@@ -7,7 +7,6 @@ the Menu and closing via an injected callback.
 from typing import Any, Callable
 
 from visualiser.constants import (
-    KEY_ESC,
     KEY_BACKSPACE,
     KEY_0,
     KEY_9,
@@ -72,9 +71,9 @@ class InputHandler:
             keynum (int): The key code that was pressed.
             mystuff (Any): Additional data passed by the hook.
         """
-        if keynum == KEY_ESC:
-            self.on_close(None)
-            return
+        # if keynum == KEY_ESC:
+        #     self.on_close(None)
+        #     return
         active = self.menu._active_field()
         if active is None:
             return

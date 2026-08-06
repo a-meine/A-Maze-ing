@@ -36,7 +36,7 @@ re: clean all
 $(MLX):
 	rm -rf mlx_CLXV
 	git clone git@github.com:42school/mlx_CLXV.git
-	cd mlx_CLXV && make
+	cd mlx_CLXV && BACKEND=wayland make
 	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
 	uv remove mlx

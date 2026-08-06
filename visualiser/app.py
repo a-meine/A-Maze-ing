@@ -5,6 +5,7 @@ maze, menu and input components on top of the shared WindowContext.
 """
 from typing import Any
 import sys
+import time
 from mlx import Mlx
 from maze.encoding import write_output
 from config.parser import Config, load_config
@@ -13,7 +14,11 @@ from visualiser.renderer import Renderer
 from visualiser.maze import MazeEngine
 from visualiser.menu import Menu
 from visualiser.input import InputHandler
-from visualiser.constants import WIN_CLOSE
+from visualiser.constants import (
+    WIN_CLOSE,
+    PATTERN_COLORS,
+    PATTERN_NAMES,
+)
 
 
 class App:
@@ -37,6 +42,8 @@ class App:
             "apply_settings": self.apply_settings,
             "regen": self.regen,
             "toggle_path": self.toggle_path,
+            "cycle_color": self.cycle_pattern_color,
+            "run_all": self.run_all,
             "close": self.close,
         })
         self.input_handler = InputHandler(self.ctx, self.menu, self.close)
@@ -51,22 +58,16 @@ class App:
         self.engine.config_images()
         self.renderer.initialise_images()
         self.menu.redraw_menu()
-        self.renderer.render_grid()
+        self.renderer.render_maze()
 
     def toggle_path(self) -> None:
         """Toggle the visibility of the solution path."""
         self.ctx.show_path = not self.ctx.show_path
         for btn in self.ctx.buttons:
             if btn.action == self.toggle_path:
-                btn.label = "Hide Path" if self.ctx.show_path else "Show Path"
+                btn.label = "Hide" if self.ctx.show_path else "Show"
         self.menu.redraw_buttons()
-        if self.ctx.show_path:
-            self.renderer._blit_path(
-                self.ctx.path_cell_img, self.ctx.path_cell_img)
-        else:
-            self.renderer._blit_path(
-                self.ctx.cell_img_ptr, self.ctx.cell_img_ptr)
-        self.ctx.sync(self.ctx.m.SYNC_WIN_COMPLETED)
+        self.renderer.render_maze()
 
     def regen(self) -> None:
         """Regenerate the maze and update the display."""
@@ -75,7 +76,39 @@ class App:
         self.engine._solve_path()
         write_output(self.ctx.grid.grid, self.ctx.config,
                      self.ctx.solution_path)
-        self.renderer._render_path()
+        self.renderer.render_maze()
+
+    def _update_color_label(self) -> None:
+        """Sync the '42 Colour' button label with the active colour."""
+        name = PATTERN_NAMES[self.ctx.pattern_index]
+        for btn in self.ctx.buttons:
+            if btn.action == self.cycle_pattern_color:
+                btn.label = name
+
+    def cycle_pattern_color(self) -> None:
+        """Cycle the '42' pattern colour and repaint the pattern."""
+        colors = PATTERN_COLORS
+        self.ctx.pattern_index = (self.ctx.pattern_index + 1) % len(colors)
+        self.ctx.pattern_color = colors[self.ctx.pattern_index]
+        self._update_color_label()
+        self.menu.redraw_buttons()
+        self.renderer.render_maze()
+
+    def run_all(self) -> None:
+        """Run every algorithm with every '42' pattern colour.
+
+        Iterates over the maze-generation algorithms (DFS, Prim,
+        Wilson) and, for each one, regenerates the maze once per
+        '42' pattern colour, pausing briefly between runs.
+        """
+        for algo in ("dfs", "prim", "wilson"):
+            self.menu._set_algorithm(algo)
+            for idx, color in enumerate(PATTERN_COLORS):
+                self.ctx.pattern_index = idx
+                self.ctx.pattern_color = color
+                self._update_color_label()
+                self.regen()
+                time.sleep(self.ctx.render_delay * 50)
 
     def close(self, dummy: Any) -> None:
         """Close the window and exit the application.

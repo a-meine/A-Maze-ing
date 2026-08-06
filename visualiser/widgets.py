@@ -39,6 +39,37 @@ def fill_image(
             data[index + 3] = 255
 
 
+def fill_rect_image(
+        m: Any, img: Any, x: int, y: int, w: int, h: int,
+        color: tuple[int, int, int] | int) -> None:
+    """Fill a rectangular region (x, y, w, h) of an existing image buffer.
+
+    Args:
+        m (Any): The Mlx instance.
+        img (Any): The image buffer to fill.
+        x (int): The x position of the rectangle.
+        y (int): The y position of the rectangle.
+        w (int): The width of the rectangle.
+        h (int): The height of the rectangle.
+        color (tuple[int, int, int] | int): The color as an MlxColor
+            integer or an (r, g, b) tuple.
+    """
+    data, bpp, size_line, _ = m.mlx_get_data_addr(img)
+    if isinstance(color, int):
+        color = MlxColor.to_rgb(color)
+    r, g, b = color
+    bpp8 = bpp // 8
+    for yy in range(y, y + h):
+        row = yy * size_line
+        start = row + x * bpp8
+        for xx in range(w):
+            i = start + xx * bpp8
+            data[i + 0] = b
+            data[i + 1] = g
+            data[i + 2] = r
+            data[i + 3] = 255
+
+
 FOCUSED_COLOR = MlxColor.BLUE
 UNFOCUSED_COLOR = MlxColor.OVERLAY_2
 
@@ -69,9 +100,6 @@ class Button:
     pressed: bool = False
     action: Callable[..., None] | None = None
 
-    _img = None
-    _last_pressed: bool | None = None
-
     def contains(self, mx: int, my: int) -> bool:
         """Check if the given coordinates are inside the button bounds.
 
@@ -85,24 +113,31 @@ class Button:
         return (
             self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
-    def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
-        """Draw the button onto the window.
+    def current_color(self) -> tuple[int, int, int] | int:
+        """Return the colour to draw, depending on pressed state."""
+        return self.color_pressed if self.pressed else self.color_normal
+
+    def paint(self, img: Any, m: Any, ox: int = 0, oy: int = 0) -> None:
+        """Fill the button rectangle into a shared canvas image.
+
+        Args:
+            img (Any): The shared canvas image.
+            m (Any): The Mlx instance.
+            ox (int): Horizontal offset of the canvas in the window.
+            oy (int): Vertical offset of the canvas in the window.
+        """
+        fill_rect_image(m, img, self.x - ox, self.y - oy,
+                        self.w, self.h, self.current_color())
+
+    def put_label(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+        """Draw the button label onto the window.
 
         Args:
             m (Any): The Mlx instance.
             mlx_ptr (Any): The mlx pointer.
             win_ptr (Any): The window pointer.
         """
-        if self._img is None or self._last_pressed != self.pressed:
-            self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
-            color = self.color_pressed if self.pressed else self.color_normal
-            fill_image(m, self._img, self.w, self.h, color)
-            self._last_pressed = self.pressed
-
-        m.mlx_put_image_to_window(mlx_ptr, win_ptr,
-                                  self._img, self.x, self.y)
-        m.mlx_string_put(mlx_ptr, win_ptr,
-                         self.x + 5, self.y + 8,
+        m.mlx_string_put(mlx_ptr, win_ptr, self.x + 5, self.y + 8,
                          MlxColor.to_hex(MlxColor.WHITE), self.label)
 
 
@@ -130,9 +165,6 @@ class InputField:
     focused: bool = False
     action: Callable[..., None] | None = None
 
-    _img = None
-    _last_focused: bool | None = None
-
     def contains(self, mx: int, my: int) -> bool:
         """Check if the given coordinates are inside the input field bounds.
 
@@ -146,22 +178,27 @@ class InputField:
         return (
             self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
-    def draw(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
-        """Draw the input field onto the window.
+    def paint(self, img: Any, m: Any, ox: int = 0, oy: int = 0) -> None:
+        """Fill the input field rectangle into a shared canvas image.
+
+        Args:
+            img (Any): The shared canvas image.
+            m (Any): The Mlx instance.
+            ox (int): Horizontal offset of the canvas in the window.
+            oy (int): Vertical offset of the canvas in the window.
+        """
+        color = FOCUSED_COLOR if self.focused else UNFOCUSED_COLOR
+        fill_rect_image(m, img, self.x - ox, self.y - oy,
+                        self.w, self.h, color)
+
+    def put_label(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+        """Draw the input field label and text onto the window.
 
         Args:
             m (Any): The Mlx instance.
             mlx_ptr (Any): The mlx pointer.
             win_ptr (Any): The window pointer.
         """
-        if self._img is None or self._last_focused != self.focused:
-            self._img = m.mlx_new_image(mlx_ptr, self.w, self.h)
-            color = FOCUSED_COLOR if self.focused else UNFOCUSED_COLOR
-            fill_image(m, self._img, self.w, self.h, color)
-            self._last_focused = self.focused
-
-        m.mlx_put_image_to_window(mlx_ptr, win_ptr,
-                                  self._img, self.x, self.y)
         m.mlx_string_put(mlx_ptr, win_ptr,
                          self.x + self.w, self.y + 5,
                          MlxColor.to_hex(MlxColor.WHITE), self.label)
