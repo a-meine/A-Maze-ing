@@ -5,15 +5,13 @@ and input fields). It is composed into the App class. The actions the
 buttons trigger are injected via an ``actions`` mapping so the menu never
 depends on the surrounding application.
 """
-from typing import Any, Callable
+from typing import Callable
 
-from visualiser.MlxColor import MlxColor
 from visualiser.widgets import Button, InputField
 from visualiser.constants import (
     GREEN,
     RED,
     INACTIVE_GRAY,
-    WHITE,
 )
 from visualiser.context import WindowContext
 
@@ -52,81 +50,76 @@ class Menu:
         self.redraw_buttons()
 
     def menu(self) -> None:
-        """Set up the menu buttons and input fields."""
+        """Set up the menu buttons and input fields (stacked layout)."""
         ctx = self.ctx
         actions = self.actions
         algo_buttons = [
-            Button(50, 520, 100, 30, "DFS",
+            Button(100, 475, 85, 30, "DFS",
                    INACTIVE_GRAY, INACTIVE_GRAY,
                    action=lambda: self._set_algorithm("dfs")),
-            Button(160, 520, 100, 30, "Prim",
+            Button(190, 475, 85, 30, "Prim",
                    GREEN, RED,
                    action=lambda: self._set_algorithm("prim")),
-            Button(370, 520, 100, 30, "Wil",
+            Button(280, 475, 85, 30, "Wil",
                    GREEN, RED,
                    action=lambda: self._set_algorithm("wilson"))
             ]
         ctx.algo_buttons = algo_buttons
         ctx.buttons = [
-            Button(100, 150, 200, 40, "Apply",
+            Button(100, 90, 220, 30, "Apply",
                    GREEN, RED, action=actions["apply_settings"]),
-            Button(100, 210, 200, 40, "Re-Generate",
+            Button(100, 130, 220, 30, "Regen",
                    GREEN, RED, action=actions["regen"]),
-            Button(100, 270, 200, 40, "Hide Path",
+            Button(100, 170, 220, 30, "Hide",
                    GREEN, RED, action=actions["toggle_path"]),
-            Button(100, 950, 150, 30, "exit",
+            Button(100, 565, 220, 30, "Maroon",
+                   GREEN, RED, action=actions["cycle_color"]),
+            Button(100, 605, 220, 30, "ALL",
+                   GREEN, RED, action=actions["run_all"]),
+            Button(150, 1000, 130, 28, "exit",
                    GREEN, RED, action=actions["close"]),
             *algo_buttons,
         ]
         ctx.fields = [
-            InputField(50, 350, 70, 30, "width",
+            InputField(150, 255, 70, 24, "W",
                        str(ctx.config.width)),
-            InputField(200, 350, 70, 30, "height",
+            InputField(150, 295, 70, 24, "H",
                        str(ctx.config.height)),
-            InputField(50, 400, 20, 20, "",
+            InputField(150, 355, 22, 20, "",
                        str(ctx.config.entry[0])),
-            InputField(73, 400, 20, 20, "",
+            InputField(178, 355, 22, 20, "",
                        str(ctx.config.entry[1])),
-            InputField(50, 450, 20, 20, "",
+            InputField(150, 395, 22, 20, "",
                        str(ctx.config.exit[0])),
-            InputField(73, 450, 20, 20, "",
+            InputField(178, 395, 22, 20, "",
                        str(ctx.config.exit[1])),
         ]
 
     def redraw_menu(self) -> None:
         """Redraw the entire menu overlay onto the window."""
+        self.render_menu()
+
+    def render_menu(self) -> None:
+        """Compose the menu widgets and present the whole scene."""
+        self._compose_widgets()
+        self.ctx.present_scene()
+
+    def _compose_widgets(self) -> None:
+        """Paint all widget rectangles into the menu canvas."""
         ctx = self.ctx
         l = ctx.layout
-        ctx.put_img(ctx.background_img, 0, 0)
-        ctx.put_img(ctx.menu_background_img, l.menu_x, l.maze_offset_y)
-        ctx.put_img(
-            ctx.maze_background_img,
-            l.maze_offset_x + l.relative_x_offset, l.maze_offset_y)
-
-        ctx.put_string(200, 480,
-                       MlxColor.to_hex(WHITE), "Algorithm:")
-        self.redraw_buttons()
-        self.redraw_fields()
-        ctx.sync(ctx.m.SYNC_WIN_COMPLETED)
+        for btn in ctx.buttons:
+            btn.paint(ctx.menu_canvas_img, ctx.m, l.menu_x, l.maze_offset_y)
+        for field in ctx.fields:
+            field.paint(ctx.menu_canvas_img, ctx.m, l.menu_x, l.maze_offset_y)
 
     def redraw_buttons(self) -> None:
         """Redraw all buttons onto the window."""
-        self._draw_widgets(self.ctx.buttons)
+        self.render_menu()
 
     def redraw_fields(self) -> None:
         """Redraw all input fields onto the window."""
-        self._draw_widgets(self.ctx.fields)
-
-    def _draw_widgets(self, widgets: list[Any]) -> None:
-        """Draw a list of widgets and synchronise the window.
-
-        Args:
-            widgets (list[Any]): The widgets to draw.
-        """
-        ctx = self.ctx
-        for widget in widgets:
-            widget.draw(ctx.m, ctx.mlx_ptr, ctx.win_ptr)
-        ctx.sync(ctx.m.SYNC_WIN_COMPLETED)
+        self.render_menu()
 
     def _focus_field_at(self, x: int, y: int) -> bool:
         """Focus the input field at the given coordinates.

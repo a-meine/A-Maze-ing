@@ -1,17 +1,22 @@
 """visualiser.refactored.renderer module.
 
-Provides the Renderer: all image creation and maze/path rendering onto
-the mlx window. It is composed into the App class and receives the shared
-WindowContext via its constructor, reading window resources from it.
+Provides the Renderer: maze and path rendering onto the mlx window.
+The whole maze is composited into a single canvas image and presented
+with exactly one draw call, avoiding the per-tile edge fringes and the
+>64-draw Vulkan flush storm that the earlier per-image approach caused.
+
+It is composed into the App class and receives the shared WindowContext
+via its constructor, reading window resources from it.
 """
 from typing import Any
 
 from maze.cell import Cell
+from maze.coordinate import Coordinate
 from visualiser.widgets import fill_image
+from visualiser.MlxColor import MlxColor
 from visualiser.constants import (
     WHITE,
     GREEN,
-    MAGENTA,
     CYAN,
     GRAY,
     MED_GRAY,
@@ -21,38 +26,15 @@ from visualiser.context import WindowContext
 
 
 class Renderer:
-    """Renders the maze and the solution path."""
+    """Renders the maze and the solution path onto a single canvas."""
 
     def __init__(self, ctx: WindowContext) -> None:
-        """Initialize the renderer.
+        """Initialize the renderer with the shared window context.
 
         Args:
             ctx (WindowContext): The shared window context.
         """
         self.ctx = ctx
-
-    def _make_tile(
-            self,
-            color: tuple[int, int, int] | int,
-            margin_x: int = 0,
-            margin_y: int = 0,
-    ) -> Any:
-        """Create a tile image with the given color.
-
-        Args:
-            color (tuple[int, int, int] | int): The RGB color as a tuple
-                or an MlxColor 0xFFRRGGBB integer.
-            margin_x (int): Horizontal margin. Defaults to 0.
-            margin_y (int): Vertical margin. Defaults to 0.
-
-        Returns:
-            Any: The created image pointer.
-        """
-        ctx = self.ctx
-        img = ctx.new_image(ctx.layout.tile_width, ctx.layout.tile_height)
-        fill_image(ctx.m, img, ctx.layout.tile_width, ctx.layout.tile_height,
-                   color, margin_x, margin_y)
-        return img
 
     def _make_solid_image(
             self,
@@ -80,142 +62,174 @@ class Renderer:
         """Initialise all image resources for rendering."""
         ctx = self.ctx
         l = ctx.layout
-        ctx.cell_img_ptr = self._make_tile(WHITE)
-        ctx.entry_cell = self._make_tile(GREEN)
-        ctx.next_cell_img_ptr = self._make_tile(MAGENTA)
-        ctx.exit_cell = self._make_tile(CYAN)
-        ctx.empty_cell_img = self._make_tile(
-            GRAY, l.tile_width // 20, l.tile_height // 20)
-        ctx.path_cell_img = self._make_tile(YELLOW)
         ctx.background_img = self._make_solid_image(
             ctx.win_width, ctx.win_height, WHITE)
         ctx.maze_background_img = self._make_solid_image(l.maze_w, l.maze_h)
-        ctx.menu_background_img = self._make_solid_image(l.menu_w, l.menu_h)
+        ctx.menu_canvas_img = self._new_menu_canvas()
+        ctx.maze_canvas_img = self._new_maze_canvas()
 
-    def _render_walls(self, cell: Cell, rx: int, ry: int) -> None:
-        """Render the walls of a cell onto the window.
+    def _new_menu_canvas(self) -> Any:
+        """Create the single canvas covering the menu panel region."""
+        ctx = self.ctx
+        l = ctx.layout
+        img = ctx.new_image(l.menu_w, l.menu_h)
+        fill_image(ctx.m, img, l.menu_w, l.menu_h, MED_GRAY)
+        return img
 
-        Args:
-            cell (Cell): The cell whose walls to render.
-            rx (int): The rendered x position.
-            ry (int): The rendered y position.
+    def _new_maze_canvas(self) -> Any:
+        """Create the single canvas covering the whole tile region.
+
+        Base fill is the wall colour so the border and any untouched
+        tile show as walls.
         """
         ctx = self.ctx
         l = ctx.layout
-        walls = [
-            (cell.walls.east,  rx + 1, ry),
-            (cell.walls.south, rx,     ry + 1),
-            (cell.walls.north, rx,     ry - 1),
-            (cell.walls.west,  rx - 1, ry),
-        ]
-        for has_wall, tx, ty in walls:
-            if has_wall:
-                continue
-            ctx.put_img(
-                ctx.cell_img_ptr,
-                l.offset_x + tx * l.tile_width,
-                l.offset_y + ty * l.tile_height)
+        w = l.rend_tiles_x * l.tile_width
+        h = l.rend_tiles_y * l.tile_height
+        img = ctx.new_image(w, h)
+        fill_image(ctx.m, img, w, h, MED_GRAY)
+        return img
 
-    def _render_entry_exit(self, cell: Cell, px: int, py: int) -> None:
-        """Render the entry and exit markers for a cell.
+    @staticmethod
+    def _to_rgb(color: tuple[int, int, int] | int) -> tuple[int, int, int]:
+        """Normalise a colour (int MlxColor or RGB tuple) to RGB."""
+        if isinstance(color, int):
+            return MlxColor.to_rgb(color)
+        return color
 
-        Args:
-            cell (Cell): The cell to check for entry/exit.
-            px (int): The pixel x position.
-            py (int): The pixel y position.
+    def _paint_tile(
+            self,
+            data: Any,
+            bpp: int,
+            size_line: int,
+            tx: int,
+            ty: int,
+            color: tuple[int, int, int] | int,
+    ) -> None:
+        """Paint the interior of tile (tx, ty) on the canvas buffer.
+
+        The margin is left untouched so the MED_GRAY base shows through
+        as the dividing walls, matching the old empty-cell look without
+        creating per-tile edge fringes.
+        """
+        l = self.ctx.layout
+        r, g, b = self._to_rgb(color)
+        margin_x = l.tile_width // 2000
+        margin_y = l.tile_height // 2000
+        ox = tx * l.tile_width + margin_x
+        oy = ty * l.tile_height + margin_y
+        w = l.tile_width - 2 * margin_x
+        h = l.tile_height - 2 * margin_y
+        bpp8 = bpp // 8
+        for yy in range(oy, oy + h):
+            row = yy * size_line
+            for xx in range(ox, ox + w):
+                i = row + xx * bpp8
+                data[i + 0] = b
+                data[i + 1] = g
+                data[i + 2] = r
+                data[i + 3] = 255
+
+    def _paint_cell(
+            self,
+            data: Any,
+            bpp: int,
+            size_line: int,
+            coord: Coordinate,
+            color: tuple[int, int, int] | int,
+    ) -> None:
+        """Paint the cell tile at (2*x+1, 2*y+1)."""
+        self._paint_tile(data, bpp, size_line, 2 * coord.x + 1, 2 * coord.y + 1,
+                         color)
+
+    def _tile_color(self, tx: int, ty: int) -> tuple[int, int, int]:
+        """Return the base colour for the render tile (tx, ty).
+
+        Both-odd tiles are cell interiors (GRAY if a wall); a tile on a
+        horizontal/vertical wall line is WHITE when the wall there is open.
+        """
+        l = self.ctx.layout
+        grid = self.ctx.grid.grid
+        if tx % 2 == 1 and ty % 2 == 1:
+            cell = grid[ty // 2][tx // 2]
+            return self._to_rgb(WHITE if not cell.is_wall else GRAY)
+        if tx % 2 == 1:
+            cy = ty // 2
+            if cy <= 0 or cy >= l.grid_height:
+                return self._to_rgb(GRAY)
+            cell = grid[cy][tx // 2]
+            return self._to_rgb(WHITE if not cell.walls.north else GRAY)
+        if ty % 2 == 1:
+            cx = tx // 2
+            if cx <= 0 or cx >= l.grid_width:
+                return self._to_rgb(GRAY)
+            cell = grid[ty // 2][cx]
+            return self._to_rgb(WHITE if not cell.walls.west else GRAY)
+        return self._to_rgb(GRAY)
+
+    def _paint_pattern(self, data: Any, bpp: int, size_line: int) -> None:
+        """Overlay the '42' wall-pattern tiles with the current colour."""
+        for cell in self.ctx.grid.grid.pattern_cells():
+            self._paint_cell(data, bpp, size_line, cell.coordinate,
+                             self.ctx.pattern_color)
+
+    def _paint_path(self, data: Any, bpp: int, size_line: int) -> None:
+        """Overlay the solution path cells and the passages between them."""
+        if not self.ctx.show_path:
+            return
+        prev_tx: int | None = None
+        prev_ty: int | None = None
+        for cell in self.ctx.solution_path:
+            tx = 2 * cell.coordinate.x + 1
+            ty = 2 * cell.coordinate.y + 1
+            if prev_tx is not None and prev_ty is not None:
+                self._paint_tile(data, bpp, size_line,
+                                 (prev_tx + tx) // 2, (prev_ty + ty) // 2,
+                                 YELLOW)
+            self._paint_tile(data, bpp, size_line, tx, ty, YELLOW)
+            prev_tx, prev_ty = tx, ty
+
+    def render_maze(self) -> None:
+        """Compose the full maze into the canvas and present it once.
+
+        Paints base tiles from grid state, then the '42' pattern colour,
+        then the solution path and entry/exit markers, and finally presents
+        the single canvas image.
         """
         ctx = self.ctx
-        coord = (cell.coordinate.x, cell.coordinate.y)
-        if coord == ctx.layout.entry:
-            ctx.put_img(ctx.entry_cell, px, py)
-        if coord == ctx.layout.exit:
-            ctx.put_img(ctx.exit_cell, px, py)
-
-    def _render_cell_state(self, cell: Cell, px: int, py: int) -> None:
-        """Render the state of a cell (occupied or not).
-
-        Args:
-            cell (Cell): The cell to render.
-            px (int): The pixel x position.
-            py (int): The pixel y position.
-        """
-        ctx = self.ctx
-        if cell.occupied:
-            ctx.put_img(ctx.next_cell_img_ptr, px, py)
-            ctx.put_img(ctx.cell_img_ptr, px, py)
-            self._render_entry_exit(cell, px, py)
-        else:
-            ctx.put_img(ctx.next_cell_img_ptr, px, py)
+        l = ctx.layout
+        data, bpp, size_line, _ = \
+            ctx.m.mlx_get_data_addr(ctx.maze_canvas_img)
+        for ty in range(l.rend_tiles_y):
+            for tx in range(l.rend_tiles_x):
+                self._paint_tile(data, bpp, size_line, tx, ty,
+                                 self._tile_color(tx, ty))
+        grid = ctx.grid.grid
+        self._paint_pattern(data, bpp, size_line)
+        self._paint_path(data, bpp, size_line)
+        self._paint_cell(data, bpp, size_line, grid.start.coordinate, GREEN)
+        self._paint_cell(data, bpp, size_line, grid.end.coordinate, CYAN)
+        ctx.present_scene()
 
     def render(self, cell: Cell, sync: bool = True) -> None:
-        """Render a single cell onto the window.
+        """Stream one generation step into the canvas and present once.
 
         Args:
-            cell (Cell): The cell to render.
-            sync (bool): Whether to synchronise the display.
-                Defaults to True.
+            cell (Cell): The cell processed by the maze generator.
+            sync (bool): Whether to synchronise the display. Defaults True.
         """
         ctx = self.ctx
-        l = ctx.layout
-        rx = 2 * cell.coordinate.x + 1
-        ry = 2 * cell.coordinate.y + 1
-        px = l.offset_x + rx * l.tile_width
-        py = l.offset_y + ry * l.tile_height
-
-        self._render_walls(cell, rx, ry)
-        if sync:
-            ctx.sync(ctx.m.SYNC_WIN_FLUSH)
-        self._render_cell_state(cell, px, py)
-
-    def render_grid(self) -> None:
-        """Render the entire maze grid onto the window."""
-        ctx = self.ctx
-        l = ctx.layout
-        for y in range(l.rend_tiles_y):
-            for x in range(l.rend_tiles_x):
-                ctx.put_img(
-                    ctx.empty_cell_img,
-                    l.offset_x + x * l.tile_width,
-                    l.offset_y + y * l.tile_height)
-            ctx.sync(ctx.m.SYNC_WIN_FLUSH)
-        ctx.sync(ctx.m.SYNC_WIN_FLUSH)
-        self._render_path()
-
-    def _blit_path(self, cell_img: Any, bridge_img: Any,
-                   draw_markers: bool = True) -> None:
-        """Draw the solution path cells and the passages between them.
-
-        Path cells sit at odd render columns/rows (2x+1). The passage
-        tiles connecting consecutive path cells are drawn at the
-        intermediate render position so the route appears continuous.
-
-        Args:
-            cell_img (Any): Image used for each path cell.
-            bridge_img (Any): Image used for the passage tiles between
-                consecutive path cells.
-            draw_markers (bool): Whether to redraw the entry/exit
-                markers on top of each cell. Defaults to True.
-        """
-        ctx = self.ctx
-        l = ctx.layout
-        prev_coord: tuple[int, int] | None = None
-        for cell in ctx.solution_path:
-            rx = 2 * cell.coordinate.x + 1
-            ry = 2 * cell.coordinate.y + 1
-            px = l.offset_x + rx * l.tile_width
-            py = l.offset_y + ry * l.tile_height
-            ctx.put_img(cell_img, px, py)
-            if draw_markers:
-                self._render_entry_exit(cell, px, py)
-            if prev_coord is not None:
-                bx = (prev_coord[0] + px) // 2
-                by = (prev_coord[1] + py) // 2
-                ctx.put_img(bridge_img, bx, by)
-            prev_coord = (px, py)
-
-    def _render_path(self) -> None:
-        """Render the solution path onto the window."""
-        ctx = self.ctx
-        if ctx.show_path:
-            self._blit_path(ctx.path_cell_img, ctx.path_cell_img)
-            ctx.sync(ctx.m.SYNC_WIN_FLUSH)
+        tx = 2 * cell.coordinate.x + 1
+        ty = 2 * cell.coordinate.y + 1
+        data, bpp, size_line, _ = \
+            ctx.m.mlx_get_data_addr(ctx.maze_canvas_img)
+        for has_wall, ntx, nty in [
+                (cell.walls.east,  tx + 1, ty),
+                (cell.walls.south, tx,     ty + 1),
+                (cell.walls.north, tx,     ty - 1),
+                (cell.walls.west,  tx - 1, ty),
+        ]:
+            self._paint_tile(data, bpp, size_line, ntx, nty,
+                             GRAY if has_wall else WHITE)
+        self._paint_tile(data, bpp, size_line, tx, ty, WHITE)
+        ctx.present_scene()

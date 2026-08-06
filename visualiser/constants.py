@@ -20,3 +20,10 @@ MED_GRAY = MlxColor.OVERLAY_0
 INACTIVE_GRAY = MlxColor.OVERLAY_1
 RED = MlxColor.RED
 YELLOW = MlxColor.YELLOW
+
+PATTERN_COLORS = (
+    MlxColor.MAROON,
+    MlxColor.MAUVE,
+    MlxColor.SAPPHIRE,
+)
+PATTERN_NAMES = ("Maroon", "Mauve", "Sapphire")

@@ -16,6 +16,7 @@ from maze.cell import Cell
 from config.parser import Config
 from visualiser.layout import Layout
 from visualiser.widgets import Button, InputField
+from visualiser.constants import PATTERN_COLORS
 
 
 class WindowContext:
@@ -40,6 +41,8 @@ class WindowContext:
     algorithm: str
     solution_path: list[Cell]
     show_path: bool
+    pattern_color: int
+    pattern_index: int
 
     layout: Layout
     grid: Any
@@ -50,13 +53,8 @@ class WindowContext:
 
     background_img: Any
     maze_background_img: Any
-    menu_background_img: Any
-    cell_img_ptr: Any
-    next_cell_img_ptr: Any
-    entry_cell: Any
-    exit_cell: Any
-    empty_cell_img: Any
-    path_cell_img: Any
+    menu_canvas_img: Any
+    maze_canvas_img: Any
 
     def __init__(self, m: Mlx, config: Config) -> None:
         """Initialise the mlx instance and window.
@@ -73,12 +71,17 @@ class WindowContext:
         )
         self.clear()
 
-        self.render_delay = 0.001
+        self.render_delay = 0.00
         self.entry = config.entry
         self.exit = config.exit
         self.algorithm = "dfs"
         self.solution_path = []
         self.show_path = True
+        self.pattern_color = PATTERN_COLORS[0]
+        self.pattern_index = 0
+        self.buttons = []
+        self.algo_buttons = []
+        self.fields = []
 
     def new_image(self, w: int, h: int) -> Any:
         """Create a new image buffer of the given size.
@@ -121,6 +124,26 @@ class WindowContext:
             mode (int): One of ``SYNC_WIN_FLUSH`` / ``SYNC_WIN_COMPLETED``.
         """
         self.m.mlx_sync(self.mlx_ptr, mode, self.win_ptr)
+
+    def present_scene(self) -> None:
+        """Present the whole UI in a single sync batch.
+
+        Blits the background, maze backdrop, menu canvas and maze canvas,
+        then draws every widget label on top. This keeps the total number
+        of draw calls per frame below the mlx draw-queue limit so the full
+        scene (menu included) is flushed together.
+        """
+        l = self.layout
+        self.put_img(self.background_img, 0, 0)
+        self.put_img(self.maze_background_img,
+                     l.maze_offset_x + l.relative_x_offset, l.maze_offset_y)
+        self.put_img(self.menu_canvas_img, l.menu_x, l.maze_offset_y)
+        self.put_img(self.maze_canvas_img, l.offset_x, l.offset_y)
+        for btn in self.buttons:
+            btn.put_label(self.m, self.mlx_ptr, self.win_ptr)
+        for field in self.fields:
+            field.put_label(self.m, self.mlx_ptr, self.win_ptr)
+        self.sync(self.m.SYNC_WIN_COMPLETED)
 
     def clear(self) -> None:
         """Clear the window."""
