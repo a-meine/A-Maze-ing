@@ -266,7 +266,8 @@ class Grid:
             self.__mark_42_wall(x + 4, y + 4)
             self.__mark_42_wall(x + 5, y + 4)
             self.__mark_42_wall(x + 6, y + 4)
-
+        else:
+            print("Skipping 42 '42' pattern, size too small")
     def pattern_cells(self) -> list[Cell]:
         """Return the cells that make up the '42' wall pattern."""
         return self._42_cells
