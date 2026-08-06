@@ -1,0 +1,1 @@
+"""Algorithms package for maze generation and solving."""

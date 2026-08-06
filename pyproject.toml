@@ -17,6 +17,11 @@ dev = [
 [tool.uv.sources]
 mlx = { path = "mlx-2.4-py3-none-any.whl" }
 
+[tool.uv.workspace]
+members = [
+    "maze",
+]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests/visualiser"]
