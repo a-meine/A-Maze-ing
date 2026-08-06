@@ -3,6 +3,7 @@ name = "a-maze-ing"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "mazegen",
     "mlx",
     "pydantic>=2.13.4",
 ]
@@ -10,18 +11,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "debugpy>=1.8.21",
-    "mypy>=2.1.0",
-    "pytest>=9.1.1",
+    "mypy>=2.1.0"
 ]
 
 [tool.uv.sources]
 mlx = { path = "mlx-2.4-py3-none-any.whl" }
+mazegen = { path = "mazegen-1.0.0-py3-none-any.whl" }
 
-[tool.uv.workspace]
-members = [
-    "maze",
-]
-
-[tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests/visualiser"]

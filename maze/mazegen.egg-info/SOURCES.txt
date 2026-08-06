@@ -8,7 +8,7 @@ algorithms/generator/randomised_prim.py
 algorithms/generator/wilson.py
 algorithms/solution/__init__.py
 algorithms/solution/bfs.py
-maze.egg-info/PKG-INFO
-maze.egg-info/SOURCES.txt
-maze.egg-info/dependency_links.txt
-maze.egg-info/top_level.txt
+mazegen.egg-info/PKG-INFO
+mazegen.egg-info/SOURCES.txt
+mazegen.egg-info/dependency_links.txt
+mazegen.egg-info/top_level.txt

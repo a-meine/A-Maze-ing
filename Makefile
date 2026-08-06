@@ -1,8 +1,8 @@
 .PHONY: all deps clean fclean re install run debug lint lint-strict
 MLX = mlx-2.4-py3-none-any.whl
+MAZE = mazegen-1.0.0-py3-none-any.whl
 
-
-all: $(MLX)
+all: $(MLX) $(MAZE)
 	uv run a_maze_ing.py config.txt
 
 install:
@@ -33,12 +33,17 @@ lint-strict:
 
 re: clean all
 
+$(MAZE):
+	uv build maze --wheel --out-dir .
+	uv remove mazegen || true
+	uv add $(MLX)
+
 $(MLX):
 	rm -rf mlx_CLXV
 	git clone git@github.com:42school/mlx_CLXV.git
 	cd mlx_CLXV && BACKEND=wayland make
 	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
-	uv remove mlx
+	uv remove mlx || true
 	uv add $(MLX)
 	uv sync
