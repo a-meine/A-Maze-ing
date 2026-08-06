@@ -44,6 +44,7 @@ class DFS(GeneratorBase):
         are available.
         """
         cell = self.grid.start
+        self.__process_cell(cell)
         history = [cell]
         while self.__occupied_cells < self.grid.total_cells:
             self._trigger_event(cell)
