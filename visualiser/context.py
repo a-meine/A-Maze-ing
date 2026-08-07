@@ -16,7 +16,7 @@ from maze.cell import Cell
 from config.parser import Config
 from visualiser.layout import Layout
 from visualiser.widgets import Button, InputField
-from visualiser.constants import PATTERN_COLORS, WALL_COLORS
+from visualiser.constants import PATTERN_COLORS, WALL_COLORS, WIN_WIDTH, WIND_HEIGHT
 
 
 class WindowContext:
@@ -27,8 +27,8 @@ class WindowContext:
     components don't juggle ``mlx_ptr``/``win_ptr`` directly.
     """
 
-    win_width: int = 1920
-    win_height: int = 1000
+    win_width: int = WIN_WIDTH
+    win_height: int = WIND_HEIGHT
 
     m: Mlx
     mlx_ptr: int
