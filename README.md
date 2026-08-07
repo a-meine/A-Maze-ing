@@ -349,7 +349,7 @@ package is also mirrored in this `README.md`.
 # Visual representation (MLX)
 
 The project ships a full **graphical (MLX)** visualiser rather than only
-terminal ASCII. It opens a full-HD (1920×1080) window, splits the screen into a
+terminal ASCII. It opens a full-HD (1920×1000) window, splits the screen into a
 left-hand menu panel and a right-hand maze panel, and renders the maze by
 compositing every tile into a **single pixel buffer** (`maze_canvas_img`) that is
 presented with one draw call.

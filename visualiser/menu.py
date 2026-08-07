@@ -90,7 +90,7 @@ class Menu:
                    GREEN, RED, action=actions["cycle_wall"]),
             Button(100, 645, 220, 30, "CRAZY",
                    GREEN, RED, action=actions["run_all"]),
-            Button(150, 1000, 130, 28, "exit",
+            Button(150, 900, 130, 28, "exit",
                    GREEN, RED, action=actions["close"]),
             *algo_buttons,
         ]

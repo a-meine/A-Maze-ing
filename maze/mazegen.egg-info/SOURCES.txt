@@ -2,7 +2,6 @@ README.md
 __init__.py
 cell.py
 config.py
-config_parser_old.py
 coordinate.py
 direction.py
 encoding.py
@@ -13,7 +12,6 @@ walls.py
 ./__init__.py
 ./cell.py
 ./config.py
-./config_parser_old.py
 ./coordinate.py
 ./direction.py
 ./encoding.py

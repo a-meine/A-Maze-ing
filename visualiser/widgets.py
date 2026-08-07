@@ -5,20 +5,21 @@ Provides reusable UI widget components for the visualiser.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable
+
+from mlx import Mlx
 
 from visualiser.MlxColor import MlxColor
 
-
 def fill_image(
-        m: Any, img: Any, w: int, h: int,
+        m: Mlx, img: int, w: int, h: int,
         color: tuple[int, int, int] | int,
         margin_x: int = 0, margin_y: int = 0) -> None:
     """Fill an image buffer with a solid color.
 
     Args:
-        m (Any): The Mlx instance.
-        img (Any): The image buffer to fill.
+        m (Mlx): The Mlx instance.
+        img (int): The image buffer to fill.
         w (int): The width of the image.
         h (int): The height of the image.
         color (tuple[int, int, int] | int): The RGB color as a tuple
@@ -28,7 +29,7 @@ def fill_image(
     """
     if isinstance(color, int):
         color = MlxColor.to_rgb(color)
-    data, bpp, size_line, endian = m.mlx_get_data_addr(img)
+    data, bpp, size_line, _ = m.mlx_get_data_addr(img)
     r, g, b = color
     for y in range(margin_y, h - margin_y):
         for x in range(margin_x, w - margin_x):
@@ -40,13 +41,13 @@ def fill_image(
 
 
 def fill_rect_image(
-        m: Any, img: Any, x: int, y: int, w: int, h: int,
+        m: Mlx, img: int, x: int, y: int, w: int, h: int,
         color: tuple[int, int, int] | int) -> None:
     """Fill a rectangular region (x, y, w, h) of an existing image buffer.
 
     Args:
-        m (Any): The Mlx instance.
-        img (Any): The image buffer to fill.
+        m (Mlx): The Mlx instance.
+        img (int): The image buffer to fill.
         x (int): The x position of the rectangle.
         y (int): The y position of the rectangle.
         w (int): The width of the rectangle.
@@ -117,7 +118,7 @@ class Button:
         """Return the colour to draw, depending on pressed state."""
         return self.color_pressed if self.pressed else self.color_normal
 
-    def paint(self, img: Any, m: Any, ox: int = 0, oy: int = 0) -> None:
+    def paint(self, img: int, m: Mlx, ox: int = 0, oy: int = 0) -> None:
         """Fill the button rectangle into a shared canvas image.
 
         Args:
@@ -129,7 +130,7 @@ class Button:
         fill_rect_image(m, img, self.x - ox, self.y - oy,
                         self.w, self.h, self.current_color())
 
-    def put_label(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+    def put_label(self, m: Mlx, mlx_ptr: int, win_ptr: int) -> None:
         """Draw the button label onto the window.
 
         Args:
@@ -178,7 +179,7 @@ class InputField:
         return (
             self.x <= mx < self.x + self.w and self.y <= my < self.y + self.h)
 
-    def paint(self, img: Any, m: Any, ox: int = 0, oy: int = 0) -> None:
+    def paint(self, img: int, m: Mlx, ox: int = 0, oy: int = 0) -> None:
         """Fill the input field rectangle into a shared canvas image.
 
         Args:
@@ -191,7 +192,7 @@ class InputField:
         fill_rect_image(m, img, self.x - ox, self.y - oy,
                         self.w, self.h, color)
 
-    def put_label(self, m: Any, mlx_ptr: Any, win_ptr: Any) -> None:
+    def put_label(self, m: Mlx, mlx_ptr: int, win_ptr: int) -> None:
         """Draw the input field label and text onto the window.
 
         Args:

@@ -37,7 +37,7 @@ class InputHandler:
         self.on_close = on_close
 
     def start_mouse_hook(
-            self, button: int, x: int, y: int, mystuff: Any
+            self, button: int, x: int, y: int, _: Any
     ) -> None:
         """Handle mouse click events.
 
@@ -45,7 +45,7 @@ class InputHandler:
             button (int): The mouse button that was clicked.
             x (int): The x coordinate of the click.
             y (int): The y coordinate of the click.
-            mystuff (Any): Additional data passed by the hook.
+            _ (Any): Additional data passed by the hook.
         """
         if button != 1:
             return
@@ -64,12 +64,12 @@ class InputHandler:
         self.menu._clear_focus()
         self.menu.redraw_fields()
 
-    def start_key_hook(self, keynum: int, mystuff: Any) -> None:
+    def start_key_hook(self, keynum: int, _: Any) -> None:
         """Handle keyboard events.
 
         Args:
             keynum (int): The key code that was pressed.
-            mystuff (Any): Additional data passed by the hook.
+            _ (Any): Additional data passed by the hook.
         """
         # if keynum == KEY_ESC:
         #     self.on_close(None)

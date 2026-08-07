@@ -135,11 +135,11 @@ class App:
                     self.renderer.render_maze()
                     time.sleep(self.ctx.render_delay * 50)
 
-    def close(self, dummy: Any) -> None:
+    def close(self, _: Any = None) -> None:
         """Close the window and exit the application.
 
         Args:
-            dummy (Any): Placeholder parameter for the mlx hook callback.
+            _: Placeholder parameter for the mlx hook callback.
         """
         print("closing...")
         self.ctx.m.mlx_loop_exit(self.ctx.mlx_ptr)

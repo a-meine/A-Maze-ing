@@ -52,7 +52,7 @@ class Config(ConfigBase, BaseModel):
     perfect: bool
     seed: int | None = None
 
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, _: Any) -> None:
         """Perform post per-field validation to ensure values are in bounds.
 
         Validates that width and height are positive, and that entry and

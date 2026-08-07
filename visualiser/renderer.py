@@ -99,7 +99,7 @@ class Renderer:
 
     def _paint_tile(
             self,
-            data: Any,
+            data: list[int],
             bpp: int,
             size_line: int,
             tx: int,
@@ -132,7 +132,7 @@ class Renderer:
 
     def _paint_cell(
             self,
-            data: Any,
+            data: list[int],
             bpp: int,
             size_line: int,
             coord: Coordinate,
@@ -168,13 +168,13 @@ class Renderer:
             return self._to_rgb(WHITE if not cell.walls.west else self.ctx.wall_color)
         return self._to_rgb(self.ctx.wall_color)
 
-    def _paint_pattern(self, data: Any, bpp: int, size_line: int) -> None:
+    def _paint_pattern(self, data: list[int], bpp: int, size_line: int) -> None:
         """Overlay the '42' wall-pattern tiles with the current colour."""
         for cell in self.ctx.grid.grid.pattern_cells():
             self._paint_cell(data, bpp, size_line, cell.coordinate,
                              self.ctx.pattern_color)
 
-    def _paint_path(self, data: Any, bpp: int, size_line: int) -> None:
+    def _paint_path(self, data: list[int], bpp: int, size_line: int) -> None:
         """Overlay the solution path cells and the passages between them."""
         if not self.ctx.show_path:
             return
@@ -236,7 +236,7 @@ class Renderer:
         self._paint_frontier(data, bpp, size_line)
         ctx.present_scene()
 
-    def _paint_frontier(self, data: Any, bpp: int, size_line: int) -> None:
+    def _paint_frontier(self, data: list[int], bpp: int, size_line: int) -> None:
         """Highlight the Prim frontier cells in pink.
 
         Paints the interior tile of every cell currently in the generator's

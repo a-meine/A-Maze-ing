@@ -21,7 +21,10 @@ clean:
 	rm -f output_maze.txt
 
 fclean: clean
-	rm $(MLX)
+	uv remove mazegen || true
+	rm -f $(MAZE)
+	uv remove mlx || true
+	rm -f $(MLX)
 
 lint:
 	uv run flake8 --extend-select=N .
@@ -35,16 +38,14 @@ re: clean all
 
 $(MAZE):
 	uv build maze --wheel --out-dir .
-	uv remove mazegen || true
+
 	uv add $(MAZE)
-	uv sync
 
 $(MLX):
 	rm -rf mlx_CLXV
 	git clone git@github.com:42school/mlx_CLXV.git
-	cd mlx_CLXV && BACKEND=wayland make
+	cd mlx_CLXV && make
 	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
-	uv remove mlx || true
+
 	uv add $(MLX)
-	uv sync

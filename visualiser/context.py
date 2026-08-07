@@ -28,11 +28,11 @@ class WindowContext:
     """
 
     win_width: int = 1920
-    win_height: int = 1080
+    win_height: int = 1000
 
     m: Mlx
-    mlx_ptr: Any
-    win_ptr: Any
+    mlx_ptr: int
+    win_ptr: int
 
     config: Config
     render_delay: float
@@ -53,10 +53,10 @@ class WindowContext:
     algo_buttons: list[Button]
     fields: list[InputField]
 
-    background_img: Any
-    maze_background_img: Any
-    menu_canvas_img: Any
-    maze_canvas_img: Any
+    background_img: int
+    maze_background_img: int
+    menu_canvas_img: int
+    maze_canvas_img: int
 
     def __init__(self, m: Mlx, config: Config) -> None:
         """Initialise the mlx instance and window.
@@ -99,7 +99,7 @@ class WindowContext:
         """
         return self.m.mlx_new_image(self.mlx_ptr, w, h)
 
-    def put_img(self, img: Any, x: int, y: int) -> None:
+    def put_img(self, img: int, x: int, y: int) -> None:
         """Put an image onto the window at the given position.
 
         Args:
