@@ -47,27 +47,28 @@ class Prim(GeneratorBase):
         selecting walls that connect to unvisited cells.
         """
         start = self._get_random_cell()
-        visited = [start]
+        visited: set[Cell] = {start}
         self._trigger_event(start)
         queue: list[Cell] = self.neighbors(start)
+        frontier: set[Cell] = set(queue)
 
         while queue:
-            for _c in queue:
-                self._trigger_event(_c, False)
             cell = random.choice(queue)
             queue.remove(cell)
+            frontier.discard(cell)
 
             visited_neighbors = [
                 n for n in self.neighbors(cell) if n in visited]
-            if len(visited_neighbors):
+            if visited_neighbors:
                 proc_cell = random.choice(visited_neighbors)
                 direction = self.get_direction(proc_cell, cell)
                 self.grid.open_wall(proc_cell.coordinate, direction)
-                visited.append(cell)
+                visited.add(cell)
                 cell.occupied = True
                 self._trigger_event(cell, True)
                 for n in self.neighbors(cell):
-                    if n not in visited and n not in queue:
+                    if n not in visited and n not in frontier:
+                        frontier.add(n)
                         queue.append(n)
 
 

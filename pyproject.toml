@@ -11,7 +11,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "debugpy>=1.8.21",
-    "mypy>=2.1.0"
+    "mypy>=2.1.0",
+    "pytest",
 ]
 
 [tool.uv.sources]
