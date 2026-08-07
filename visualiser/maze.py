@@ -3,9 +3,10 @@
 Provides the MazeEngine: maze model construction, grid building and
 solution path computation. It is composed into the App class.
 """
-from typing import Any, Callable
+from typing import Callable
 import random
 
+from maze.algorithms.generator.base import GeneratorBase
 from maze.cell import Cell
 from maze.grid import Grid
 from maze.algorithms.generator.randomised_prim import Prim
@@ -46,10 +47,10 @@ class MazeEngine:
             "entry": ctx.layout.entry,
             "exit": ctx.layout.exit,
         })
-        ctx.grid = self._build_grid(cfg)
-        ctx.grid.event = self._render_cb
+        ctx.generator = self._build_grid(cfg)
+        ctx.generator.event = self._render_cb
 
-    def _build_grid(self, config: Config) -> Any:
+    def _build_grid(self, config: Config) -> GeneratorBase:
         if config.seed is not None:
             random.seed(config.seed)
         grid = Grid(config)
@@ -62,7 +63,7 @@ class MazeEngine:
     def _solve_path(self) -> None:
         """Compute the solution path using BFS."""
         try:
-            solver = BFS(self.ctx.grid.grid)
+            solver = BFS(self.ctx.generator.grid)
             self.ctx.solution_path = solver.solve()
         except Exception:
             self.ctx.solution_path = []

@@ -5,8 +5,8 @@ the generators and the BFS solver behind one importable class so the maze
 logic can be reused from a future project.
 """
 import random
-from typing import Any
 
+from maze.algorithms.generator.base import GeneratorBase
 from maze.config import ConfigBase
 from maze.grid import Grid
 from maze.algorithms.generator.dfs import DFS
@@ -143,14 +143,14 @@ class MazeGenerator:
             self._directions = path_to_direction_string(solution, grid)
         return self
 
-    def _build_algorithm(self, grid: Grid) -> Any:
+    def _build_algorithm(self, grid: Grid) -> GeneratorBase:
         """Build the generator instance for the selected algorithm.
 
         Args:
             grid (Grid): The grid to generate on.
 
         Returns:
-            Any: The concrete generator instance.
+            GeneratorBase: The concrete generator instance.
         """
         if self.algorithm == "prim":
             return Prim(grid)

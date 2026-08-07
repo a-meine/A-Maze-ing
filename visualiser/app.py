@@ -75,9 +75,9 @@ class App:
     def regen(self) -> None:
         """Regenerate the maze and update the display."""
         self.apply_settings()
-        self.ctx.grid.generate_maze()
+        self.ctx.generator.generate_maze()
         self.engine._solve_path()
-        write_output(self.ctx.grid.grid, self.ctx.config,
+        write_output(self.ctx.generator.grid, self.ctx.config,
                      self.ctx.solution_path)
         self.renderer.render_maze()
 

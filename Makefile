@@ -40,7 +40,6 @@ re: clean all
 
 $(MAZE):
 	uv build maze --wheel --out-dir .
-
 	uv add $(MAZE)
 
 $(MLX):
@@ -49,5 +48,4 @@ $(MLX):
 	cd mlx_CLXV && make
 	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
-
 	uv add $(MLX)

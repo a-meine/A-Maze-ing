@@ -8,7 +8,6 @@ with exactly one draw call, avoiding the per-tile edge fringes and the
 It is composed into the App class and receives the shared WindowContext
 via its constructor, reading window resources from it.
 """
-from typing import Any
 
 from maze.cell import Cell
 from maze.coordinate import Coordinate
@@ -41,7 +40,7 @@ class Renderer:
             w: int,
             h: int,
             color: tuple[int, int, int] | int = MED_GRAY,
-    ) -> Any:
+    ) -> int:
         """Create a solid-colour image of the given size.
 
         Args:
@@ -51,7 +50,7 @@ class Renderer:
                 or an MlxColor 0xFFRRGGBB integer. Defaults to MED_GRAY.
 
         Returns:
-            Any: The created image pointer.
+            img (int): The created image pointer.
         """
         ctx = self.ctx
         img = ctx.new_image(w, h)
@@ -68,7 +67,7 @@ class Renderer:
         ctx.menu_canvas_img = self._new_menu_canvas()
         ctx.maze_canvas_img = self._new_maze_canvas()
 
-    def _new_menu_canvas(self) -> Any:
+    def _new_menu_canvas(self) -> int:
         """Create the single canvas covering the menu panel region."""
         ctx = self.ctx
         l = ctx.layout
@@ -76,7 +75,7 @@ class Renderer:
         fill_image(ctx.m, img, l.menu_w, l.menu_h, MED_GRAY)
         return img
 
-    def _new_maze_canvas(self) -> Any:
+    def _new_maze_canvas(self) -> int:
         """Create the single canvas covering the whole tile region.
 
         Base fill is the wall colour so the border and any untouched
@@ -150,7 +149,7 @@ class Renderer:
         open, otherwise it takes the current wall colour.
         """
         l = self.ctx.layout
-        grid = self.ctx.grid.grid
+        grid = self.ctx.generator
         if tx % 2 == 1 and ty % 2 == 1:
             cell = grid[ty // 2][tx // 2]
             return self._to_rgb(WHITE if not cell.is_wall else self.ctx.wall_color)
@@ -170,7 +169,7 @@ class Renderer:
 
     def _paint_pattern(self, data: list[int], bpp: int, size_line: int) -> None:
         """Overlay the '42' wall-pattern tiles with the current colour."""
-        for cell in self.ctx.grid.grid.pattern_cells():
+        for cell in self.ctx.generator.grid.pattern_cells():
             self._paint_cell(data, bpp, size_line, cell.coordinate,
                              self.ctx.pattern_color)
 
@@ -205,11 +204,11 @@ class Renderer:
             for tx in range(l.rend_tiles_x):
                 self._paint_tile(data, bpp, size_line, tx, ty,
                                  self._tile_color(tx, ty))
-        grid = ctx.grid.grid
+        generator = ctx.generator
         self._paint_pattern(data, bpp, size_line)
         self._paint_path(data, bpp, size_line)
-        self._paint_cell(data, bpp, size_line, grid.start.coordinate, GREEN)
-        self._paint_cell(data, bpp, size_line, grid.end.coordinate, CYAN)
+        self._paint_cell(data, bpp, size_line, generator.grid.start.coordinate, GREEN)
+        self._paint_cell(data, bpp, size_line, generator.grid.end.coordinate, CYAN)
         ctx.present_scene()
 
     def render(self, cell: Cell, sync: bool = True) -> None:
@@ -244,6 +243,6 @@ class Renderer:
         during streaming. Generators that do not track a frontier expose no
         such attribute and are unaffected.
         """
-        frontier = getattr(self.ctx.grid, "frontier", ())
+        frontier = getattr(self.ctx.generator, "frontier", ())
         for cell in frontier:
             self._paint_cell(data, bpp, size_line, cell.coordinate, PINK)

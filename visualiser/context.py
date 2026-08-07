@@ -9,8 +9,8 @@ Because the state below belongs to a single window, it lives here as the
 shared object that components read and write. Only the behaviour methods
 are split across components; the state is intentionally central.
 """
-from typing import Any
-from maze.grid import Grid
+from typing import Optional
+from maze.algorithms.generator.base import GeneratorBase
 from mlx import Mlx
 from maze.cell import Cell
 from config.parser import Config
@@ -47,7 +47,7 @@ class WindowContext:
     wall_index: int
 
     layout: Layout
-    grid: Grid
+    generator: GeneratorBase
 
     buttons: list[Button]
     algo_buttons: list[Button]
@@ -87,7 +87,7 @@ class WindowContext:
         self.algo_buttons = []
         self.fields = []
 
-    def new_image(self, w: int, h: int) -> Any:
+    def new_image(self, w: int, h: int) -> int:
         """Create a new image buffer of the given size.
 
         Args:
@@ -95,9 +95,12 @@ class WindowContext:
             h (int): The height of the image.
 
         Returns:
-            Any: The created image pointer.
+            int: The created image pointer.
         """
-        return self.m.mlx_new_image(self.mlx_ptr, w, h)
+        img: Optional[int] = self.m.mlx_new_image(self.mlx_ptr, w, h)
+        if img is None:
+            raise RuntimeError("mlx_new_image")
+        return img
 
     def put_img(self, img: int, x: int, y: int) -> None:
         """Put an image onto the window at the given position.

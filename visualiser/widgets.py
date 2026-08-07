@@ -122,8 +122,8 @@ class Button:
         """Fill the button rectangle into a shared canvas image.
 
         Args:
-            img (Any): The shared canvas image.
-            m (Any): The Mlx instance.
+            img (int): The shared canvas image.
+            m (mlx): The Mlx instance.
             ox (int): Horizontal offset of the canvas in the window.
             oy (int): Vertical offset of the canvas in the window.
         """
@@ -134,9 +134,9 @@ class Button:
         """Draw the button label onto the window.
 
         Args:
-            m (Any): The Mlx instance.
-            mlx_ptr (Any): The mlx pointer.
-            win_ptr (Any): The window pointer.
+            m (mlx): The Mlx instance.
+            mlx_ptr (int): The mlx pointer.
+            win_ptr (int): The window pointer.
         """
         m.mlx_string_put(mlx_ptr, win_ptr, self.x + 5, self.y + 8,
                          MlxColor.to_hex(MlxColor.WHITE), self.label)
@@ -183,8 +183,8 @@ class InputField:
         """Fill the input field rectangle into a shared canvas image.
 
         Args:
-            img (Any): The shared canvas image.
-            m (Any): The Mlx instance.
+            img (int): The shared canvas image.
+            m (mlx): The Mlx instance.
             ox (int): Horizontal offset of the canvas in the window.
             oy (int): Vertical offset of the canvas in the window.
         """
@@ -196,9 +196,9 @@ class InputField:
         """Draw the input field label and text onto the window.
 
         Args:
-            m (Any): The Mlx instance.
-            mlx_ptr (Any): The mlx pointer.
-            win_ptr (Any): The window pointer.
+            m (Mlx): The Mlx instance.
+            mlx_ptr (int): The mlx pointer.
+            win_ptr (int): The window pointer.
         """
         m.mlx_string_put(mlx_ptr, win_ptr,
                          self.x + self.w, self.y + 5,
