@@ -26,6 +26,8 @@ fclean: clean
 	uv remove mlx || true
 	rm -f $(MLX)
 
+validate:
+	python3 output_validator.py output_maze.txt
 lint:
 	uv run flake8 --extend-select=N .
 	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
