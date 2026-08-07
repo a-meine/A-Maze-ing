@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from config.parser import Config
+from maze.grid import Grid
 
 
 @dataclass
@@ -76,9 +77,20 @@ class Layout:
         """
         grid_width = int(fields[0].text or config.width)
         grid_height = int(fields[1].text or config.height)
-        entry = (int(fields[2].text), int(fields[3].text))
-        exit_pt = (int(fields[4].text), int(fields[5].text))
+        grid = Grid.build(grid_width, grid_height)
+        entry = (int(fields[2].text or config.entry[0]), int(fields[3].text or config.entry[1]))
+        exit_pt = (int(fields[4].text or config.exit[0]), int(fields[5].text or config.exit[1]))
+        if entry[0] > grid_width or entry[1] > grid_height or grid[entry[0]][entry[1]].is_wall:
+            entry = (config.entry[0], config.entry[1])
+        if exit_pt[0] > grid_width or exit_pt[1] > grid_height or grid[exit_pt[0]][exit_pt[1]].is_wall:
+            exit_pt = (config.exit[0], config.exit[1])
 
+        fields[0].text = str(grid_width)
+        fields[1].text = str(grid_height)
+        fields[2].text = str(entry[0])
+        fields[3].text = str(entry[1])
+        fields[4].text = str(exit_pt[0])
+        fields[5].text = str(exit_pt[1])
         rend_tiles_x = 2 * grid_width + 1
         rend_tiles_y = 2 * grid_height + 1
 
