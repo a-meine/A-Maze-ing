@@ -18,6 +18,8 @@ from visualiser.constants import (
     WIN_CLOSE,
     PATTERN_COLORS,
     PATTERN_NAMES,
+    WALL_COLORS,
+    WALL_NAMES,
 )
 
 
@@ -43,6 +45,7 @@ class App:
             "regen": self.regen,
             "toggle_path": self.toggle_path,
             "cycle_color": self.cycle_pattern_color,
+            "cycle_wall": self.cycle_wall_color,
             "run_all": self.run_all,
             "close": self.close,
         })
@@ -94,21 +97,43 @@ class App:
         self.menu.redraw_buttons()
         self.renderer.render_maze()
 
-    def run_all(self) -> None:
-        """Run every algorithm with every '42' pattern colour.
+    def _update_wall_label(self) -> None:
+        """Sync the 'Wall Colour' button label with the active colour."""
+        name = WALL_NAMES[self.ctx.wall_index]
+        for btn in self.ctx.buttons:
+            if btn.action == self.cycle_wall_color:
+                btn.label = name
 
-        Iterates over the maze-generation algorithms (DFS, Prim,
-        Wilson) and, for each one, regenerates the maze once per
-        '42' pattern colour, pausing briefly between runs.
+    def cycle_wall_color(self) -> None:
+        """Cycle the wall colour and repaint the maze."""
+        colors = WALL_COLORS
+        self.ctx.wall_index = (self.ctx.wall_index + 1) % len(colors)
+        self.ctx.wall_color = colors[self.ctx.wall_index]
+        self._update_wall_label()
+        self.menu.redraw_buttons()
+        self.renderer.render_maze()
+
+    def run_all(self) -> None:
+        """Run every algorithm once, cycling through all colour combinations.
+
+        Generates a single maze per algorithm (DFS, Prim, Wilson) and then,
+        without regenerating, steps through every pairing of the '42' pattern
+        colour and the wall colour, pausing briefly between combinations.
         """
         for algo in ("dfs", "prim", "wilson"):
             self.menu._set_algorithm(algo)
-            for idx, color in enumerate(PATTERN_COLORS):
+            self.regen()
+            for idx, p_color in enumerate(PATTERN_COLORS):
                 self.ctx.pattern_index = idx
-                self.ctx.pattern_color = color
+                self.ctx.pattern_color = p_color
                 self._update_color_label()
-                self.regen()
-                time.sleep(self.ctx.render_delay * 50)
+                for widx, w_color in enumerate(WALL_COLORS):
+                    self.ctx.wall_index = widx
+                    self.ctx.wall_color = w_color
+                    self._update_wall_label()
+                    self.menu.redraw_buttons()
+                    self.renderer.render_maze()
+                    time.sleep(self.ctx.render_delay * 50)
 
     def close(self, dummy: Any) -> None:
         """Close the window and exit the application.

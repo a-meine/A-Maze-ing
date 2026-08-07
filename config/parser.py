@@ -11,6 +11,27 @@ from typing import Any
 from config.base import ConfigBase
 
 
+# Hardcoded '42' wall geometry (mirrors maze/grid.py __wall_42).
+_42_WALL_WIDTH = 8
+_42_WALL_HEIGHT = 6
+_42_OFFSETS: frozenset[tuple[int, int]] = frozenset({
+    # '4'
+    (0, 0), (0, 1), (0, 2), (1, 2), (2, 2), (2, 3), (2, 4),
+    # '2'
+    (4, 0), (5, 0), (6, 0), (6, 1), (6, 2), (5, 2), (4, 2),
+    (4, 3), (4, 4), (5, 4), (6, 4),
+})
+
+
+def _is_on_42_wall(x: int, y: int, width: int, height: int) -> bool:
+    """Return whether cell (x, y) lies on the centered '42' wall pattern."""
+    if width < _42_WALL_WIDTH or height <= _42_WALL_HEIGHT:
+        return False
+    origin_x = (width // 2) - ((_42_WALL_WIDTH - 1) // 2)
+    origin_y = (height // 2) - ((_42_WALL_HEIGHT - 1) // 2)
+    return (x - origin_x, y - origin_y) in _42_OFFSETS
+
+
 class Config(ConfigBase, BaseModel):
     """Configuration model for the maze application.
 
@@ -70,6 +91,10 @@ class Config(ConfigBase, BaseModel):
                              "widthxheight range")
         if self.entry == self.exit:
             raise ValueError("ENTRY and EXIT point cannot be the same")
+        if _is_on_42_wall(self.entry[0], self.entry[1], self.width, self.height):
+            raise ValueError("ENTRY point cannot lie on the '42' wall")
+        if _is_on_42_wall(self.exit[0], self.exit[1], self.width, self.height):
+            raise ValueError("EXIT point cannot lie on the '42' wall")
         return self
 
 

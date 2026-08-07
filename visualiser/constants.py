@@ -27,3 +27,12 @@ PATTERN_COLORS = (
     MlxColor.SAPPHIRE,
 )
 PATTERN_NAMES = ("Maroon", "Mauve", "Sapphire")
+
+WALL_COLORS = (
+    MlxColor.OVERLAY_2,
+    MlxColor.TEAL,
+    MlxColor.SAPPHIRE,
+    MlxColor.MAROON,
+    MlxColor.MAUVE,
+)
+WALL_NAMES = ("Gray", "Teal", "Sapphire", "Maroon", "Mauve")

@@ -16,7 +16,7 @@ from maze.cell import Cell
 from config.parser import Config
 from visualiser.layout import Layout
 from visualiser.widgets import Button, InputField
-from visualiser.constants import PATTERN_COLORS
+from visualiser.constants import PATTERN_COLORS, WALL_COLORS
 
 
 class WindowContext:
@@ -43,6 +43,8 @@ class WindowContext:
     show_path: bool
     pattern_color: int
     pattern_index: int
+    wall_color: int
+    wall_index: int
 
     layout: Layout
     grid: Any
@@ -79,6 +81,8 @@ class WindowContext:
         self.show_path = True
         self.pattern_color = PATTERN_COLORS[0]
         self.pattern_index = 0
+        self.wall_color = WALL_COLORS[0]
+        self.wall_index = 0
         self.buttons = []
         self.algo_buttons = []
         self.fields = []

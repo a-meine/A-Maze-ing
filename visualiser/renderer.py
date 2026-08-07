@@ -18,7 +18,6 @@ from visualiser.constants import (
     WHITE,
     GREEN,
     CYAN,
-    GRAY,
     MED_GRAY,
     YELLOW,
 )
@@ -145,27 +144,28 @@ class Renderer:
     def _tile_color(self, tx: int, ty: int) -> tuple[int, int, int]:
         """Return the base colour for the render tile (tx, ty).
 
-        Both-odd tiles are cell interiors (GRAY if a wall); a tile on a
-        horizontal/vertical wall line is WHITE when the wall there is open.
+        Both-odd tiles are cell interiors (the wall colour if a wall); a tile
+        on a horizontal/vertical wall line is WHITE when the wall there is
+        open, otherwise it takes the current wall colour.
         """
         l = self.ctx.layout
         grid = self.ctx.grid.grid
         if tx % 2 == 1 and ty % 2 == 1:
             cell = grid[ty // 2][tx // 2]
-            return self._to_rgb(WHITE if not cell.is_wall else GRAY)
+            return self._to_rgb(WHITE if not cell.is_wall else self.ctx.wall_color)
         if tx % 2 == 1:
             cy = ty // 2
             if cy <= 0 or cy >= l.grid_height:
-                return self._to_rgb(GRAY)
+                return self._to_rgb(self.ctx.wall_color)
             cell = grid[cy][tx // 2]
-            return self._to_rgb(WHITE if not cell.walls.north else GRAY)
+            return self._to_rgb(WHITE if not cell.walls.north else self.ctx.wall_color)
         if ty % 2 == 1:
             cx = tx // 2
             if cx <= 0 or cx >= l.grid_width:
-                return self._to_rgb(GRAY)
+                return self._to_rgb(self.ctx.wall_color)
             cell = grid[ty // 2][cx]
-            return self._to_rgb(WHITE if not cell.walls.west else GRAY)
-        return self._to_rgb(GRAY)
+            return self._to_rgb(WHITE if not cell.walls.west else self.ctx.wall_color)
+        return self._to_rgb(self.ctx.wall_color)
 
     def _paint_pattern(self, data: Any, bpp: int, size_line: int) -> None:
         """Overlay the '42' wall-pattern tiles with the current colour."""
@@ -230,6 +230,6 @@ class Renderer:
                 (cell.walls.west,  tx - 1, ty),
         ]:
             self._paint_tile(data, bpp, size_line, ntx, nty,
-                             GRAY if has_wall else WHITE)
+                             self.ctx.wall_color if has_wall else WHITE)
         self._paint_tile(data, bpp, size_line, tx, ty, WHITE)
         ctx.present_scene()

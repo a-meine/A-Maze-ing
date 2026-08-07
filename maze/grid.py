@@ -1,6 +1,6 @@
 """maze.grid module."""
 from collections.abc import Iterator
-from config.base import ConfigBase
+from maze.config import ConfigBase
 from maze.cell import Cell
 from maze.coordinate import Coordinate
 from maze.direction import Direction

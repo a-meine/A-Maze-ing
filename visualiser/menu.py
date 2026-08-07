@@ -15,6 +15,8 @@ from visualiser.constants import (
 )
 from visualiser.context import WindowContext
 
+ALGO_LABELS = {"dfs": "DFS", "prim": "Prim", "wilson": "Wil"}
+
 
 class Menu:
     """Builds and redraws the menu widgets."""
@@ -30,10 +32,22 @@ class Menu:
             ctx (WindowContext): The shared window context.
             actions (dict[str, Callable[..., None]]): The callbacks the
                 buttons trigger, keyed by name (``apply_settings``,
-                ``regen``, ``toggle_path``, ``close``).
+                ``regen``, ``toggle_path``, ``cycle_color``,
+                ``cycle_wall``, ``run_all``, ``close``).
         """
         self.ctx = ctx
         self.actions = actions
+
+    def _style_algo_buttons(self) -> None:
+        """Colour the algorithm buttons: active is green, others not-clicked.
+
+        Every call resets all three buttons to INACTIVE_GRAY and highlights
+        only the one matching the current ``ctx.algorithm``.
+        """
+        for btn in self.ctx.algo_buttons:
+            is_active = btn.label == ALGO_LABELS.get(self.ctx.algorithm)
+            btn.color_normal = GREEN if is_active else INACTIVE_GRAY
+            btn.color_pressed = RED if is_active else INACTIVE_GRAY
 
     def _set_algorithm(self, algo: str) -> None:
         """Set the maze generation algorithm and update button colours.
@@ -43,10 +57,7 @@ class Menu:
         """
         ctx = self.ctx
         ctx.algorithm = algo
-        for btn in ctx.algo_buttons:
-            is_active = btn.label.lower() == algo
-            btn.color_normal = GREEN if is_active else INACTIVE_GRAY
-            btn.color_pressed = RED if is_active else INACTIVE_GRAY
+        self._style_algo_buttons()
         self.redraw_buttons()
 
     def menu(self) -> None:
@@ -65,6 +76,7 @@ class Menu:
                    action=lambda: self._set_algorithm("wilson"))
             ]
         ctx.algo_buttons = algo_buttons
+        self._style_algo_buttons()
         ctx.buttons = [
             Button(100, 90, 220, 30, "Apply",
                    GREEN, RED, action=actions["apply_settings"]),
@@ -74,7 +86,9 @@ class Menu:
                    GREEN, RED, action=actions["toggle_path"]),
             Button(100, 565, 220, 30, "Maroon",
                    GREEN, RED, action=actions["cycle_color"]),
-            Button(100, 605, 220, 30, "ALL",
+            Button(100, 605, 220, 30, "Gray",
+                   GREEN, RED, action=actions["cycle_wall"]),
+            Button(100, 645, 220, 30, "CRAZY",
                    GREEN, RED, action=actions["run_all"]),
             Button(150, 1000, 130, 28, "exit",
                    GREEN, RED, action=actions["close"]),

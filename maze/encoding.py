@@ -2,9 +2,23 @@
 
 Provides encoding and output functions for the maze.
 """
+from typing import Protocol
 from maze.cell import Cell
 from maze.grid import Grid
-from config.parser import Config
+
+
+class OutputConfig(Protocol):
+    """Structural contract for the config used by the output writer.
+
+    Attributes:
+        output_file (str): The path where the maze is written.
+        entry (tuple[int, int]): The entry cell coordinates.
+        exit (tuple[int, int]): The exit cell coordinates.
+    """
+
+    output_file: str
+    entry: tuple[int, int]
+    exit: tuple[int, int]
 
 
 def cell_to_hex(cell: Cell) -> str:
@@ -62,7 +76,7 @@ def path_to_direction_string(path: list[Cell], grid: Grid) -> str:
 
 
 def write_output(
-        grid: Grid, config: Config, solution_path: list[Cell]) -> None:
+        grid: Grid, config: OutputConfig, solution_path: list[Cell]) -> None:
     """Write the maze output to the configured output file.
 
     Encodes the maze grid as hex characters, then writes the entry
@@ -70,7 +84,8 @@ def write_output(
 
     Args:
         grid (Grid): The maze grid to encode.
-        config (Config): The configuration containing the output file path.
+        config (OutputConfig): The configuration containing the output
+            file path plus the entry and exit coordinates.
         solution_path (list[Cell]): The solution path to encode as directions.
     """
     path_str = path_to_direction_string(solution_path, grid)

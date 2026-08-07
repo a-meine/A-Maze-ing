@@ -36,7 +36,8 @@ re: clean all
 $(MAZE):
 	uv build maze --wheel --out-dir .
 	uv remove mazegen || true
-	uv add $(MLX)
+	uv add $(MAZE)
+	uv sync
 
 $(MLX):
 	rm -rf mlx_CLXV

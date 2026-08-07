@@ -1,8 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mazegen"
 version = "1.0.0"
-description = "Maze generation"
+description = "Reusable maze generation and solving package"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
 keywords = ["maze", "maze-generation"]
+
+[tool.setuptools]
+packages = [
+    "maze",
+    "maze.algorithms",
+    "maze.algorithms.generator",
+    "maze.algorithms.solution",
+]
+
+[tool.setuptools.package-dir]
+maze = "."
