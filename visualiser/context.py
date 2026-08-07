@@ -10,7 +10,7 @@ shared object that components read and write. Only the behaviour methods
 are split across components; the state is intentionally central.
 """
 from typing import Any
-
+from maze.grid import Grid
 from mlx import Mlx
 from maze.cell import Cell
 from config.parser import Config
@@ -47,7 +47,7 @@ class WindowContext:
     wall_index: int
 
     layout: Layout
-    grid: Any
+    grid: Grid
 
     buttons: list[Button]
     algo_buttons: list[Button]
