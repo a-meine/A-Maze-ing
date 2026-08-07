@@ -43,7 +43,7 @@ $(MAZE):
 
 $(MLX):
 	rm -rf mlx_CLXV
-	git clone git@github.com:42school/mlx_CLXV.git
+	git clone --branch v2.4 --single-branch git@github.com:42school/mlx_CLXV.git
 	cd mlx_CLXV && make
 	cp mlx_CLXV/mlx-*.whl .
 	rm -rf mlx_CLXV
