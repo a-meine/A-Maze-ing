@@ -14,6 +14,7 @@ WIN_CLOSE = 33
 WHITE = MlxColor.WHITE
 GREEN = MlxColor.GREEN
 MAGENTA = MlxColor.PINK
+PINK = MlxColor.PINK
 CYAN = MlxColor.SKY
 GRAY = MlxColor.OVERLAY_2
 MED_GRAY = MlxColor.OVERLAY_0

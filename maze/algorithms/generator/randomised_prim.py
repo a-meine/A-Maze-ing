@@ -50,12 +50,12 @@ class Prim(GeneratorBase):
         visited: set[Cell] = {start}
         self._trigger_event(start)
         queue: list[Cell] = self.neighbors(start)
-        frontier: set[Cell] = set(queue)
+        self.frontier: set[Cell] = set(queue)
 
         while queue:
             cell = random.choice(queue)
             queue.remove(cell)
-            frontier.discard(cell)
+            self.frontier.discard(cell)
 
             visited_neighbors = [
                 n for n in self.neighbors(cell) if n in visited]
@@ -67,8 +67,8 @@ class Prim(GeneratorBase):
                 cell.occupied = True
                 self._trigger_event(cell, True)
                 for n in self.neighbors(cell):
-                    if n not in visited and n not in frontier:
-                        frontier.add(n)
+                    if n not in visited and n not in self.frontier:
+                        self.frontier.add(n)
                         queue.append(n)
 
 

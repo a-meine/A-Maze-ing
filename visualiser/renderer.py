@@ -20,6 +20,7 @@ from visualiser.constants import (
     CYAN,
     MED_GRAY,
     YELLOW,
+    PINK,
 )
 from visualiser.context import WindowContext
 
@@ -232,4 +233,17 @@ class Renderer:
             self._paint_tile(data, bpp, size_line, ntx, nty,
                              self.ctx.wall_color if has_wall else WHITE)
         self._paint_tile(data, bpp, size_line, tx, ty, WHITE)
+        self._paint_frontier(data, bpp, size_line)
         ctx.present_scene()
+
+    def _paint_frontier(self, data: Any, bpp: int, size_line: int) -> None:
+        """Highlight the Prim frontier cells in pink.
+
+        Paints the interior tile of every cell currently in the generator's
+        ``frontier`` set, so the growing edge of Prim's carving is visible
+        during streaming. Generators that do not track a frontier expose no
+        such attribute and are unaffected.
+        """
+        frontier = getattr(self.ctx.grid, "frontier", ())
+        for cell in frontier:
+            self._paint_cell(data, bpp, size_line, cell.coordinate, PINK)
