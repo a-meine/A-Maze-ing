@@ -78,7 +78,7 @@ class WindowContext:
         self.exit = config.exit
         self.algorithm = "dfs"
         self.solution_path = []
-        self.show_path = True
+        self.show_path = False
         self.pattern_color = PATTERN_COLORS[0]
         self.pattern_index = 0
         self.wall_color = WALL_COLORS[0]
