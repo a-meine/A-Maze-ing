@@ -28,8 +28,8 @@ projects.
   HEIGHT` hex digits, entry, exit, and the `N/E/S/W` direction path) — directly
   consumable by the provided `output_validator.py`.
 - **Visualise** interactively in an MLX window: re-generate, show/hide the path,
-  switch algorithms, and cycle the colour of the "42" pattern — all from an
-  on-screen menu.
+  switch algorithms, and cycle the colour of the "42" pattern and of the walls —
+  all from an on-screen menu.
 
 ---
 
@@ -157,7 +157,8 @@ The configuration is parsed and validated with **Pydantic** (`config/parser.py`)
 - All mandatory keys must be present.
 - `WIDTH` and `HEIGHT` must be positive integers (`WIDTH ≤ 100`).
 - `ENTRY` and `EXIT` are `x,y` integer tuples that must be **inside** the grid
-  and **different** from each other.
+  and **different** from each other, and must **not** fall on the "42" wall
+  pattern.
 - `PERFECT` must be a valid boolean.
 
 Malformed configuration (missing key, a line without `=`, letters where numbers
@@ -210,7 +211,9 @@ Two extra generators were implemented and are selectable in the GUI:
 
 - **Randomised Prim's algorithm** (`randomised_prim.py`) — grows a single
   connected region by repeatedly punching a random frontier wall. Produces
-  mazes with many short dead ends and a more "sprawling" character.
+  mazes with many short dead ends and a more "sprawling" character. The growing
+  frontier is highlighted in pink while it streams, so the algorithm's behaviour
+  is easy to follow step by step.
 - **Wilson's algorithm** (`wilson.py`) — loop-erased random walks. Produces a
   more uniform-looking random spanning tree with no obvious bias.
 
@@ -376,7 +379,9 @@ All interactions are handled with the mouse (left-click) on the on-screen menu:
 - **DFS / Prim / Wil** — switch the generation algorithm.
 - **Maroon / Mauve / Sapphire** — cycle the colour of the "42" pattern.
 - **Gray / Teal / Sapphire / Maroon / Mauve** — cycle the maze **wall colour**.
-- **ALL** — run every algorithm once for every "42" colour (a demo loop).
+- **CRAZY** — generate each algorithm once (3 mazes total), then cycle through
+  every combination of "42" pattern colour and wall colour (3 × 5) without
+  regenerating (a demonstration loop).
 - **exit** — close the window.
 
 The mandatory interactions (re-generate, show/hide a valid shortest path, change
@@ -429,29 +434,29 @@ generator (subject) and the renderer (observer).
   CONTROLLER                 MODEL (subject)                VIEW (observer)              MLX / STATE
   App · InputHandler         maze/ generators               Renderer · Menu              WindowContext
 
-     │  user clicks "Regen"                                   │                              │
-     ▼                                                        │                              │
-  1. regen()  ──────────────────────────┐                     │                              │
-     │        build Grid, pick algo     │                     │                              │
-     │        (DFS / Prim / Wilson)     ▼                     │                              │
-     └───────────────────────────────► MazeEngine          subscribe                          │
-                                        │                     │                              │
-  2. SUBSCRIBE                         │  generator.event  ──► │                              │
-     wire renderer to generator        │  = renderer.render   │   renderer now listens        │
-                                        │                     │                              │
-  3. grid.generate_maze()  ────────────► │                     │                              │
-     (Controller drives the Model)      ▼  loop over cells    │                              │
-                                        │                     │                              │
-  4. PUBLISH (per carved cell)          │  _trigger_event(cell)─► render(cell)  ─────────────► │
-     the model pushes one cell          │                     │  paint a few tiles            │
-     to every subscriber                │                     │  present_scene()              │
-                                        │                     │  ───────────► mlx_sync()      │
+     │  user clicks "Regen"                                   │                                │
+     ▼                                                        │                                │
+  1. regen()  ──────────────────────────┐                     │                                │
+     │        build Grid, pick algo     │                     │                                │
+     │        (DFS / Prim / Wilson)     ▼                     │                                │
+    └───────────────────────────────► MazeEngine          subscribe                            │
+                                        │                     │                                │
+2. SUBSCRIBE                         │  generator.event  ──► │                                 │
+     wire renderer to generator        │  = renderer.render   │   renderer now listens         │
+                                        │                     │                                │
+  3. grid.generate_maze()  ────────────► │                     │                               │
+     (Controller drives the Model)      ▼  loop over cells    │                                │
+                                        │                     │                                │
+  4. PUBLISH (per carved cell)          │  _trigger_event(cell)─► render(cell) ─────────────►  │
+     the model pushes one cell          │                     │  paint a few tiles             │
+     to every subscriber                │                     │  present_scene()               │
+                                        │                     │  ───────────► mlx_sync()       │
                                         │                     │               (draw one frame) │
-                                        ▼                     │                    │ redraw   │
+                                        ▼                     │                    │ redraw    │
   5. until maze is complete             │                     │                    ▼           │
-                                        │                     │                              │
-     ─────────────────────────────────  │                     │                              │
-  6. Controller solves + exports        │                     │                              │
+                                        │                     │                                │
+     ─────────────────────────────────  │                     │                                │
+  6. Controller solves + exports        │                     │                                │
      BFS(solve)  → solution_path  ◄─────│──────────────────────│──────────────────────────────│─► state
      write_output()  → output file      │                     │                              │
                                         │                     │                              │
@@ -574,12 +579,7 @@ carving loops drive either a terminal print (headless) or a live window (GUI).
 ### Classic references
 
 - [Maze Generation: Algorithm Recap — Jamis Buck](https://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap) — the canonical recap of all the classic generation algorithms (DFS, Prim, Kruskal, Wilson…).
-- [Maze generation algorithms on Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
-- [Maze solving algorithm (BFS) — Wikipedia](https://en.wikipedia.org/wiki/Maze-solving_algorithm)
-- [Maze Generation Tweet Storm — Jamis Buck](https://weblog.jamisbuck.org/2011/1/27/maze-generation-twitter)
-- Python official:
-  - [Docs for the `random` module](https://docs.python.org/3/library/random.html) — used for seeded, reproducible generation.
-  - [Typing / type hints PEP 484](https://docs.python.org/3/library/typing.html)
+
 
 ### How AI was used
 
@@ -612,36 +612,13 @@ were all written, discussed, and verified with peers before integration.
 
 | Team member | Focus |
 |-------------|-------|
-| **Abd El Aziz (amine)** | Maze core logic, configuration validation, BFS solver and encoding/output, tests, and documentation. |
-| **Monir (mnououal)** | MLX integration, the visualiser/app menu interactions, the layout geometry, Makefile and package build, and the MLX build/rendering fixes. |
+| **mnououal)** | Maze core logic, configuration validation, BFS solver and encoding/output, tests, package build and documentation. |
+| **ameine** | MLX integration, the visualiser/*, menu interactions, the layout geometry, Makefile and the MLX build/rendering fixes. |
 
 Division of work was oriented around the two big pillars of the project
 (model vs. the GUI), which the repository structure (a GUI-free `maze/`
 package next to the `visualiser/`) reflects.
 
-### Planning and how it evolved
-
-1. **Exploration (early)** — modelled the maze requirements from `en.subject.pdf`,
-   chose the DFS backtracker, and defined the hex output format. The initial
-   plan is captured in `plan.md` and `CheckList.md`.
-2. **Core first** — implemented the cell/wall/grid model and the DFS generator,
-   then the BFS solver and the hex encoding writer, verifying with
-   `output_validator.py`.
-3. **Validation** — introduced Pydantic strict validation and robust error
-   handling over the hand-rolled parser; added flake8 + mypy + pytest tooling.
-4. **Visualiser and packaging** — built the MLX window and menu, then refactored
-   the visualiser into a clean component-based architecture (a shared
-   `WindowContext`). The package was rebuilt as `mazegen-*.whl` and wired into
-   the project as a local dependency.
-5. **Rendering bug-fix phase** (late) — the hardest part: the MLX Vulkan
-   backend's 64-draw limit caused a black menu and per-tile rendering fringes.
-   This drove the single-canvas compositing design (see `findings_background_
-   bug.md` and `findings_better_rendering.md`). The initial plan did not
-   anticipate this platform-specific constraint.
-
-What ended up **deviating** from the plan: the amount of effort spent on the
-MLX rendering pipeline (much larger than the generation itself), and the
-decision to expose DFS/Prim/Wilson in the UI (an extra beyond the core story).
 
 ### What worked well and what could be improved
 
@@ -657,14 +634,16 @@ decision to expose DFS/Prim/Wilson in the UI (an extra beyond the core story).
 
 **Could be improved:**
 
-- `PERFECT=False` is currently ignored — all generators always produce perfect
-  mazes; supporting looping non-perfect mazes is the obvious next step.
+- An imperfect (looping) maze is **not** implemented. This is a deliberate
+  scope decision, not an oversight: the subject only requires a *perfect* maze
+  when `PERFECT=True`, and it does **not** require an imperfect maze when the
+  flag is unset — so all generators always produce perfect mazes (spanning
+  trees). A looping non-perfect mode would be the obvious extension.
 - The UI `WIDTH`/`HEIGHT`/`ENTRY`/`EXIT` input fields do not yet fully control
   grid geometry (layout sizing still primarily driven by the config).
 - The `mazegen-*.whl` is rebuilt from the `maze/` source by `make`/`uv build`
   (keep it in sync when the core code changes).
-- The legacy `visualiser/legacy_package_visauliser/` folder is unused and mypy
-  is configured to ignore it.
+
 
 ### Tools used
 
@@ -681,8 +660,9 @@ decision to expose DFS/Prim/Wilson in the UI (an extra beyond the core story).
 
 # Known limitations
 
-1. `PERFECT` is parsed/validated but all generators currently make perfect
-   mazes (a non-perfect/looping mode is not implemented yet).
+1. An imperfect/looping maze is not implemented. The subject only requires a
+   perfect maze when `PERFECT=True`; it does not require an imperfect maze when
+   the flag is unset, so every generator always produces a perfect maze.
 2. The `ALGORITHM` config key is not read — the algorithm is selected via the
    on-screen menu.
 3. The `mazegen-*.whl` at the root is built from the current `maze/` source —

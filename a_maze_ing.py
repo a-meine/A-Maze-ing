@@ -20,7 +20,7 @@ if __name__ == "__main__":
     try:
         config = load_config(config_file)
         print("parsed config parameters: ")
-    except (KeyError, ValueError, TypeError) as e:
+    except (KeyError, ValueError, TypeError, OSError, UnicodeDecodeError) as e:
         print(e)
         exit(1)
     App(config).run()

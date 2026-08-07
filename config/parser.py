@@ -114,30 +114,28 @@ def load_config(path: str) -> Config:
         KeyError: If required keys are missing from the config file.
         TypeError: If entry or exit coordinates have wrong format.
         ValueError: If coordinate values are empty or invalid.
+        OSError: If the config file cannot be read.
+        UnicodeDecodeError: If the config file is not valid text.
     """
     raw: dict[str, Any] = {}
-    try:
-        with open(path) as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith('#'):
-                    continue
-                parts = line.split('=')
-                if len(parts) != 2:
-                    raise ValueError("each line must be in the format: " +
-                                     " KEY=value")
-                key, value = parts
-                if not key.strip():
-                    raise ValueError("Empty KEY in line: " + f"'{line}'")
-                if not value.strip():
-                    raise ValueError("Empty value in line: " + f"'{line}'")
-                if key.lower() in raw:
-                    print(f"duplicate key {key}, skipping...")
-                    continue
-                raw[key.strip().lower()] = value.strip()
-    except (OSError, UnicodeDecodeError) as e:
-        print(e)
-        exit(1)
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split('=')
+            if len(parts) != 2:
+                raise ValueError("each line must be in the format: " +
+                                 " KEY=value")
+            key, value = parts
+            if not key.strip():
+                raise ValueError("Empty KEY in line: " + f"'{line}'")
+            if not value.strip():
+                raise ValueError("Empty value in line: " + f"'{line}'")
+            if key.lower() in raw:
+                print(f"duplicate key {key}, skipping...")
+                continue
+            raw[key.strip().lower()] = value.strip()
     mandatory_keys: list[str] = ['width', 'height', 'entry', 'exit',
                                  'output_file', 'perfect']
     missing_keys = set(mandatory_keys) - set(raw.keys())
