@@ -77,13 +77,28 @@ class Layout:
         """
         grid_width = int(fields[0].text or config.width)
         grid_height = int(fields[1].text or config.height)
+        if (grid_width * grid_height) < 2:
+            grid_width = config.width
+            grid_height = config.height
         grid = Grid.build(grid_width, grid_height)
-        entry = (int(fields[2].text or config.entry[0]), int(fields[3].text or config.entry[1]))
-        exit_pt = (int(fields[4].text or config.exit[0]), int(fields[5].text or config.exit[1]))
-        if entry[0] > grid_width or entry[1] > grid_height or grid[entry[0]][entry[1]].is_wall:
-            entry = (config.entry[0], config.entry[1])
-        if exit_pt[0] > grid_width or exit_pt[1] > grid_height or grid[exit_pt[0]][exit_pt[1]].is_wall:
-            exit_pt = (config.exit[0], config.exit[1])
+        entry_x = int(fields[2].text or config.entry[0])
+        entry_y = int(fields[3].text or config.entry[1])
+        exit_x = int(fields[4].text or config.exit[0])
+        exit_y = int(fields[5].text or config.exit[1])
+        if entry_x > grid_width or entry_y > grid_height or grid[entry_y][entry_x].is_wall:
+            entry_x = config.entry[0]
+            entry_y = config.entry[1]
+        if exit_x > grid_width or exit_y > grid_height or grid[exit_y][exit_x].is_wall:
+            exit_x = config.exit[0]
+            exit_y = config.exit[1]
+        if entry_x > grid_width or entry_y > grid_height:
+            entry_x = 0
+            entry_y = 0
+        if exit_x > grid_width or exit_y > grid_height:
+            exit_x = grid_width - 1
+            exit_y = grid_height - 1
+        entry = (entry_x, entry_y)
+        exit_pt = (exit_x, exit_y)
 
         fields[0].text = str(grid_width)
         fields[1].text = str(grid_height)
