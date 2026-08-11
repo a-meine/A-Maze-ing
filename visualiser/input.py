@@ -80,6 +80,6 @@ class InputHandler:
         if keynum == KEY_BACKSPACE:
             active.text = active.text[:-1]
             self.menu.redraw_fields()
-        elif KEY_0 <= keynum <= KEY_9:
+        elif (KEY_0 <= keynum <= KEY_9) and len(active.text) < 2:
             active.text += chr(keynum)
             self.menu.redraw_fields()

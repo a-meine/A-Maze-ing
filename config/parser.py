@@ -44,10 +44,10 @@ class Config(ConfigBase, BaseModel):
 
     model_config = ConfigDict(frozen=True, extra='forbid')
 
-    width: int = Field(le=100)  # number of pixels, no need for float
-    height: int  # same as above
+    width: int = Field(le=99) # number of pixels, no need for float
+    height: int = Field(le=99) # same as above
     entry: tuple[int, int]  # cells are discrete, no need for float
-    exit: tuple[int, int] = Field(alias='exit')  # same as above
+    exit: tuple[int, int] = Field(description='exit')  # same as above
     output_file: str
     perfect: bool
     seed: int | None = None
