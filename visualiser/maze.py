@@ -47,6 +47,7 @@ class MazeEngine:
             "entry": ctx.layout.entry,
             "exit": ctx.layout.exit,
         })
+        ctx.config = cfg
         ctx.generator = self._build_grid(cfg)
         ctx.generator.event = self._render_cb
 

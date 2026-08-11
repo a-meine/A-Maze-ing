@@ -95,6 +95,8 @@ class BFS():
                 break
             i += 1
         self._grid.clean()
+        if nodes[-1].cell != end:
+            return []
         node = nodes[-1]
         path: list[Cell] = []
         while True:

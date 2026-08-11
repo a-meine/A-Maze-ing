@@ -60,6 +60,11 @@ class Renderer:
     def initialise_images(self) -> None:
         """Initialise all image resources for rendering."""
         ctx = self.ctx
+        for name in ("background_img", "maze_background_img",
+                     "menu_canvas_img", "maze_canvas_img"):
+            image = getattr(ctx, name, None)
+            if image is not None:
+                ctx.m.mlx_destroy_image(ctx.mlx_ptr, image)
         l = ctx.layout
         ctx.background_img = self._make_solid_image(
             ctx.win_width, ctx.win_height, WHITE)
@@ -233,7 +238,8 @@ class Renderer:
                              self.ctx.wall_color if has_wall else WHITE)
         self._paint_tile(data, bpp, size_line, tx, ty, WHITE)
         self._paint_frontier(data, bpp, size_line)
-        ctx.present_scene()
+        if sync:
+            ctx.present_scene()
 
     def _paint_frontier(self, data: list[int], bpp: int, size_line: int) -> None:
         """Highlight the Prim frontier cells in pink.
