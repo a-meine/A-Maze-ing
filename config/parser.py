@@ -71,6 +71,8 @@ class Config(ConfigBase, BaseModel):
             raise ValueError("WIDTH must be positive")
         if self.height <= 0:
             raise ValueError("HEIGHT must be positive")
+        if self.width * self.height < 2:
+            raise ValueError("WIDTH x HEIGHT should be greater than 1")
         if self.entry[0] < 0 or self.entry[1] < 0:
             raise ValueError("ENTRY point coordinates must be positive")
         if self.exit[0] < 0 or self.exit[1] < 0:

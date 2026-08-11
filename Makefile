@@ -8,7 +8,7 @@ all: $(MLX) $(MAZE)
 install:
 	uv sync
 
-run:
+run: $(MLX) $(MAZE)
 	uv run a_maze_ing.py config.txt
 
 debug:
