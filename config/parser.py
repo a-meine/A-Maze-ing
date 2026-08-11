@@ -7,8 +7,8 @@ untrusted and for this we have decided to use Pydantic over
 extensive validation and less verbosity (aka to be more Pythonic).
 """
 from pydantic import BaseModel, model_validator, ConfigDict, Field
-from typing import Any
-from config.base import ConfigBase
+from typing import Any, Annotated
+from maze.config import ConfigBase
 
 
 # Hardcoded '42' wall geometry (mirrors maze/grid.py __wall_42).
@@ -44,11 +44,17 @@ class Config(ConfigBase, BaseModel):
 
     model_config = ConfigDict(frozen=True, extra='forbid')
 
-    width: int = Field(le=99) # number of pixels, no need for float
-    height: int = Field(le=99) # same as above
-    entry: tuple[int, int]  # cells are discrete, no need for float
-    exit: tuple[int, int] = Field(description='exit')  # same as above
-    output_file: str
+    width: int = Field(ge=2, le=99) # number of pixels, no need for float
+    height: int = Field(ge=2, le=99) # same as above
+    entry: tuple[
+        Annotated[int, Field(ge=0, le=100)],
+        Annotated[int, Field(ge=0, le=100)],
+    ] = Field(description="entry")
+    exit: tuple[
+        Annotated[int, Field(ge=0, le=100)],
+        Annotated[int, Field(ge=0, le=100)],
+    ] = Field(description="exit")
+    output_file: str = Field(ge=2)
     perfect: bool
     seed: int | None = None
 
