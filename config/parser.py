@@ -12,11 +12,6 @@ from maze.config import ConfigBase
 from maze.grid import Grid
 
 
-# Hardcoded '42' wall geometry (mirrors maze/grid.py __wall_42).
-_42_WALL_WIDTH = 8
-_42_WALL_HEIGHT = 6
-
-
 class Config(ConfigBase, BaseModel):
     """Configuration model for the maze application.
 
