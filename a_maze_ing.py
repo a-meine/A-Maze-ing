@@ -23,4 +23,6 @@ if __name__ == "__main__":
     except (KeyError, ValueError, TypeError, OSError, UnicodeDecodeError) as e:
         print(e)
         exit(1)
+    # except error:
+    #     for item in errorr print(item["msg"])
     App(config).run()

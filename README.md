@@ -48,8 +48,8 @@ make install     # equivalent to: uv sync
 ```
 
 This installs the dependencies declared in `pyproject.toml` (`mlx` local wheel,
-`mazegen` local wheel, `pydantic >= 2.13`) from the `uv.lock` lockfile. It also
-pulls in the development tooling (`mypy`).
+`mazegen` local wheel, `pydantic >= 2.13`). It also pulls in the development
+tooling (`mypy`).
 
 ### Building the local packages (portable)
 
@@ -97,30 +97,6 @@ Usage: python3 a_maze_ing.py config.txt
 | `make clean`  | Remove `__pycache__`, `.mypy_cache`, `*.pyc`, `output_maze.txt` |
 | `make fclean` | `clean` + remove the local MLX wheel                           |
 | `make re`     | `clean` then `all`                                              |
-
-### Validation script
-
-The subject-provided `output_validator.py` checks the coherence of the generated
-output file:
-
-```bash
-python3 output_validator.py output_maze.txt
-```
-
-### Tests
-
-The project ships with an in-memory `FakeMlx` so the visualiser can be tested
-without opening a window:
-
-```bash
-uv run pytest
-```
-
-Run the visualiser tests specifically:
-
-```bash
-uv run pytest tests/visualiser
-```
 
 ---
 
@@ -238,8 +214,7 @@ The maze is built to respect the subject's rules by construction:
 - **External border walls** — out-of-bounds neighbours can never be opened.
 - **Symmetric walls** — see the wall model above.
 - **No 3×3 open areas / corridors no wider than 2** — perfect mazes have
-  single-cell corridors by construction; a test probes for 3×3 open zones
-  across all generators.
+  single-cell corridors by construction.
 - **"42" pattern visible** — a closed-cell block is carved near the centre.
 
 ---
@@ -271,7 +246,7 @@ The file layout is:
 ```
 
 Every line ends with `\n`. The encoding (`maze/encoding.py`) is designed to be
-testable by the subject's moulinette and `output_validator.py`.
+compatible with the subject's expected output format.
 
 ---
 
@@ -485,8 +460,8 @@ Reading order:
 8. **Idle** — control returns to `mlx_loop()` until the next input.
 
 The model only ever calls an *optional* callback, so a headless consumer (e.g.
-`MazeGenerator.generate()` or a terminal test) that never subscribes runs the
-very same carving loops with no GUI at all.
+`MazeGenerator.generate()`) that never subscribes runs the very same carving
+loops with no GUI at all.
 
 ## The SoC model (MVC hybrid with a shared context)
 
@@ -509,8 +484,8 @@ is therefore a **hybrid**: MVC driven by a shared context (sometimes called
 
 All coupling between components runs through `WindowContext` by dependency
 injection in the constructors — no component imports another component's
-internals. This is what makes the visualiser unit-testable headless with a
-`FakeMlx` (the tests inject a fake `mlx` into the very same `WindowContext`).
+internals. This also allows the visualiser to run headless with a `FakeMlx`
+injected into the same `WindowContext`.
 
 ## The single seam between GUI and maze logic
 
@@ -595,8 +570,6 @@ tasks, always reviewed and understood before being integrated:
 - **Rendering strategy brainstorming** — used to explore options for the MLX
   "black background" bug (the 64-draw limit) and to evaluate a single-canvas
   compositing approach over per-tile draws.
-- **Test scaffolding** — helped draft pytest fixtures and the in-memory
-  `FakeMlx` so the visualiser could be tested without a window.
 - **Documentation polish** — helped draft and proofread this README and the
   package README.
 
@@ -612,12 +585,21 @@ were all written, discussed, and verified with peers before integration.
 
 | Team member | Focus |
 |-------------|-------|
-| **mnououal)** | Maze core logic, configuration validation, BFS solver and encoding/output, tests, package build and documentation. |
+| **mnououal** | Maze core logic, configuration validation, BFS solver and encoding/output, package build and documentation. |
 | **ameine** | MLX integration, the visualiser/*, menu interactions, the layout geometry, Makefile and the MLX build/rendering fixes. |
 
 Division of work was oriented around the two big pillars of the project
 (model vs. the GUI), which the repository structure (a GUI-free `maze/`
 package next to the `visualiser/`) reflects.
+
+### Anticipated planning and how it evolved
+
+Before implementation, we used **Excalidraw** to design the code structure and
+divide the work between a reusable maze core and a separate MLX visualiser.
+During integration, animation led us to connect them through an optional event
+callback, while MLX's draw limit changed the visualiser from per-tile rendering
+to a single canvas managed by `WindowContext`. The original separation remained
+intact in the final event-driven architecture.
 
 
 ### What worked well and what could be improved
@@ -625,12 +607,11 @@ package next to the `visualiser/`) reflects.
 **Worked well:**
 
 - A clean, layered architecture with the maze logic fully separated from the GUI.
-- Three working, tested generation algorithms plus BFS solver and correct hex
-  output — the output file validates with the provided script.
+- Three working generation algorithms plus BFS solver and correct hex output —
+  the output file follows the required format.
 - Flake8 and mypy pass on the committed repository; docstrings on all modules.
 - A pragmatic solution to the (only) hard problem: single-canvas compositing
   under the MLX 64-draw limit.
-- Solid test suite (the visualiser tested against an in-memory fake).
 
 **Could be improved:**
 
@@ -647,12 +628,12 @@ package next to the `visualiser/`) reflects.
 
 ### Tools used
 
-- **Python 3.10** with **uv** for dependency management, sync and lockfiles.
+- **Python 3.10** with **uv** for dependency management and sync.
 - **Pydantic 2.x** for strict, typed configuration validation.
 - **MLX** (the school's MiniLibX) Vulkan-backed graphical library — window,
   images, events, single-batch present.
-- **pytest** with an in-memory `FakeMlx` for the visualiser.
 - **flake8** (`select = F,N`) and **mypy --strict** for static checking.
+- **Excalidraw** for planning the initial code structure and division of work.
 - **Git** for branching (a `maze`-logic branch and a `visualiser` branch were
   merged) and code review.
 

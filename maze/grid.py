@@ -241,7 +241,7 @@ class Grid:
         fourtytwo_wall_height = 6
         fourtytwo_wall_width = 8
         if (
-            self.width >= fourtytwo_wall_width
+            self.width > fourtytwo_wall_width
             and self.height > fourtytwo_wall_height
         ):
             x = (self.width // 2) - ((fourtytwo_wall_width - 1) // 2)

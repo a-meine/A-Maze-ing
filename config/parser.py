@@ -7,29 +7,14 @@ untrusted and for this we have decided to use Pydantic over
 extensive validation and less verbosity (aka to be more Pythonic).
 """
 from pydantic import BaseModel, model_validator, ConfigDict, Field
-from typing import Any
-from config.base import ConfigBase
+from typing import Any, Annotated
+from maze.config import ConfigBase
+from maze.grid import Grid
 
 
 # Hardcoded '42' wall geometry (mirrors maze/grid.py __wall_42).
 _42_WALL_WIDTH = 8
 _42_WALL_HEIGHT = 6
-_42_OFFSETS: frozenset[tuple[int, int]] = frozenset({
-    # '4'
-    (0, 0), (0, 1), (0, 2), (1, 2), (2, 2), (2, 3), (2, 4),
-    # '2'
-    (4, 0), (5, 0), (6, 0), (6, 1), (6, 2), (5, 2), (4, 2),
-    (4, 3), (4, 4), (5, 4), (6, 4),
-})
-
-
-def _is_on_42_wall(x: int, y: int, width: int, height: int) -> bool:
-    """Return whether cell (x, y) lies on the centered '42' wall pattern."""
-    if width < _42_WALL_WIDTH or height <= _42_WALL_HEIGHT:
-        return False
-    origin_x = (width // 2) - ((_42_WALL_WIDTH - 1) // 2)
-    origin_y = (height // 2) - ((_42_WALL_HEIGHT - 1) // 2)
-    return (x - origin_x, y - origin_y) in _42_OFFSETS
 
 
 class Config(ConfigBase, BaseModel):
@@ -44,11 +29,17 @@ class Config(ConfigBase, BaseModel):
 
     model_config = ConfigDict(frozen=True, extra='forbid')
 
-    width: int = Field(le=100)  # number of pixels, no need for float
-    height: int  # same as above
-    entry: tuple[int, int]  # cells are discrete, no need for float
-    exit: tuple[int, int] = Field(alias='exit')  # same as above
-    output_file: str
+    width: int = Field(ge=2, le=99) # number of pixels, no need for float
+    height: int = Field(ge=2, le=99) # same as above
+    entry: tuple[
+        Annotated[int, Field(ge=0, le=100)],
+        Annotated[int, Field(ge=0, le=100)],
+    ] = Field(description="entry")
+    exit: tuple[
+        Annotated[int, Field(ge=0, le=100)],
+        Annotated[int, Field(ge=0, le=100)],
+    ] = Field(description="exit")
+    output_file: str = Field(min_length=2)
     perfect: bool
     seed: int | None = None
 
@@ -65,6 +56,8 @@ class Config(ConfigBase, BaseModel):
             raise ValueError("WIDTH must be positive")
         if self.height <= 0:
             raise ValueError("HEIGHT must be positive")
+        if self.width * self.height < 2:
+            raise ValueError("WIDTH x HEIGHT should be greater than 1")
         if self.entry[0] < 0 or self.entry[1] < 0:
             raise ValueError("ENTRY point coordinates must be positive")
         if self.exit[0] < 0 or self.exit[1] < 0:
@@ -91,9 +84,10 @@ class Config(ConfigBase, BaseModel):
                              "widthxheight range")
         if self.entry == self.exit:
             raise ValueError("ENTRY and EXIT point cannot be the same")
-        if _is_on_42_wall(self.entry[0], self.entry[1], self.width, self.height):
+        grid = Grid.build(self.width, self.height)
+        if grid[self.entry[1]][self.entry[0]].is_wall:
             raise ValueError("ENTRY point cannot lie on the '42' wall")
-        if _is_on_42_wall(self.exit[0], self.exit[1], self.width, self.height):
+        if grid[self.exit[1]][self.exit[0]].is_wall:
             raise ValueError("EXIT point cannot lie on the '42' wall")
         return self
 

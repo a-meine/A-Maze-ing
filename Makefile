@@ -1,4 +1,4 @@
-.PHONY: all deps clean fclean re install run debug lint lint-strict
+.PHONY: all deps clean fclean re install run debug lint lint-strict maze mlx
 MLX = mlx-2.4-py3-none-any.whl
 MAZE = mazegen-1.0.0-py3-none-any.whl
 
@@ -8,7 +8,7 @@ all: $(MLX) $(MAZE)
 install:
 	uv sync
 
-run:
+run: $(MLX) $(MAZE)
 	uv run a_maze_ing.py config.txt
 
 debug:
@@ -19,6 +19,8 @@ clean:
 	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 	rm -f output_maze.txt
+	rm -rf maze/build
+	rm -rf maze/mazegen.egg-info
 
 fclean: clean
 	uv remove mazegen || true
@@ -37,6 +39,9 @@ lint-strict:
 	uv run mypy . --strict
 
 re: clean all
+
+maze: $(MAZE)
+mlx: $(MLX)
 
 $(MAZE):
 	uv build maze --wheel --out-dir .
