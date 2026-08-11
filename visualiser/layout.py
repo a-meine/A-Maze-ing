@@ -85,16 +85,16 @@ class Layout:
         entry_y = int(fields[3].text or config.entry[1])
         exit_x = int(fields[4].text or config.exit[0])
         exit_y = int(fields[5].text or config.exit[1])
-        if entry_x > grid_width or entry_y > grid_height or grid[entry_y][entry_x].is_wall:
+        if entry_x >= grid_width or entry_y >= grid_height or grid[entry_y][entry_x].is_wall:
             entry_x = config.entry[0]
             entry_y = config.entry[1]
-        if exit_x > grid_width or exit_y > grid_height or grid[exit_y][exit_x].is_wall:
+        if exit_x >= grid_width or exit_y >= grid_height or grid[exit_y][exit_x].is_wall:
             exit_x = config.exit[0]
             exit_y = config.exit[1]
-        if entry_x > grid_width or entry_y > grid_height:
+        if entry_x >= grid_width or entry_y >= grid_height:
             entry_x = 0
             entry_y = 0
-        if exit_x > grid_width or exit_y > grid_height:
+        if exit_x >= grid_width or exit_y >= grid_height:
             exit_x = grid_width - 1
             exit_y = grid_height - 1
         entry = (entry_x, entry_y)
